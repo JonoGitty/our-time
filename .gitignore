@@ -1,0 +1,11 @@
+# local run artefacts — not part of the project
+logs/
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+
+# never commit keys. tools/ read them from ~/.aiorch/.env at runtime.
+.env
+*.key
+*.pem

@@ -1,0 +1,769 @@
+<title>OUR TIME</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+/* ═══ OUR TIME · tokens ═════════════════════════════════════════════
+   Single-theme by decision: the brand's world is its near-black ground.
+   Every value measured from the supplied garment renders. Tokens are named
+   after materials, never --primary/--accent.                              */
+:root{
+  --ground:#0F0F0F;  --void:#000000;  --ink:#FAF6F6;  --paper:#DFDDDE;
+  --navy:#141B2C;    --slate:#54647E; --sand:#CFC2B4; --coal:#171717;
+  --dim:color-mix(in oklab, var(--ink) 52%, var(--ground));
+  --hair:color-mix(in oklab, var(--ink) 18%, transparent);
+  --paper-ink:#141B2C;
+  --paper-dim:color-mix(in oklab, var(--paper-ink) 62%, var(--paper));
+  --paper-hair:color-mix(in oklab, var(--paper-ink) 20%, transparent);
+
+  --xs:clamp(.68rem,.66rem + .12vw,.74rem);
+  --sm:clamp(.78rem,.75rem + .15vw,.86rem);
+  --base:clamp(.88rem,.85rem + .18vw,1rem);
+  --lg:clamp(1.25rem,1.05rem + .9vw,1.75rem);
+  --xl:clamp(2rem,1.4rem + 3vw,4rem);
+  --xxl:clamp(2.6rem,1.4rem + 6vw,7.5rem);
+
+  --gut:max(16px,4vw);
+  --light:0deg;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:Archivo,"Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-size:var(--base); line-height:1.55; -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+img{max-width:100%}
+a{color:inherit}
+.mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace}
+.eyebrow{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:var(--xs);
+  letter-spacing:.22em; text-transform:uppercase; color:var(--dim); margin:0}
+h1,h2,h3{margin:0; font-weight:600; letter-spacing:-.025em; text-wrap:balance}
+h1{font-size:var(--xxl); line-height:.92}
+h2{font-size:var(--xl); line-height:.96}
+h3{font-size:var(--lg); letter-spacing:-.01em}
+p{margin:0; max-width:62ch; color:var(--dim)}
+:where(button,a,input,select):focus-visible{
+  outline:2px solid currentColor; outline-offset:2px; border-radius:3px;
+}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+/* ═══ the mark ══════════════════════════════════════════════════════
+   Traced from the supplied bitmap to a real vector, so it takes
+   currentColor and needs no blend-mode fudge to sit on a ground.      */
+.ot{display:block; width:auto; fill:currentColor}
+
+/* ═══ the loader — the mechanism, winding up ════════════════════════ */
+#loader{
+  position:fixed; inset:0; z-index:200; background:var(--ground);
+  display:grid; place-content:center; justify-items:center; gap:26px;
+  transition:opacity .55s ease, visibility .55s;
+}
+#loader[hidden]{display:grid!important; opacity:0; visibility:hidden; pointer-events:none}
+#loader canvas{width:min(46vw,190px); aspect-ratio:1; display:block}
+.load-mark{display:grid; place-items:center; gap:14px}
+.load-mark .ot{height:26px}
+.load-bar{width:min(46vw,190px); height:1px; background:var(--hair); position:relative; overflow:hidden}
+.load-bar i{position:absolute; inset:0 auto 0 0; width:0%; background:var(--ink); transition:width .35s ease}
+.load-note{font-size:var(--xs); letter-spacing:.24em; text-transform:uppercase; color:var(--dim)}
+
+/* ═══ the glass pill — the only chrome on the site ══════════════════ */
+.pillwrap{position:fixed; left:0; right:0; top:calc(env(safe-area-inset-top,0px) + 14px);
+  display:flex; justify-content:center; pointer-events:none; z-index:90}
+.pill{
+  pointer-events:auto; position:relative; width:min(560px, calc(100vw - 24px));
+  height:52px; border-radius:999px; display:flex; align-items:center;
+  gap:clamp(10px,2.4vw,20px); padding-inline:clamp(13px,3vw,20px); isolation:isolate;
+  background:rgb(15 15 15 / .94);                       /* TIER 3 — the floor */
+  border:1px solid rgb(250 246 246 / .14);
+}
+@supports (backdrop-filter:blur(2px)) or (-webkit-backdrop-filter:blur(2px)){
+  :root[data-tier="2"] .pill, :root[data-tier="1"] .pill{  /* TIER 2 — the product */
+    background:rgb(15 15 15 / .44);
+    -webkit-backdrop-filter:blur(18px) saturate(180%) brightness(1.06);
+    backdrop-filter:blur(18px) saturate(180%) brightness(1.06);
+  }
+}
+:root[data-tier="1"] .pill{                                /* TIER 1 — Chromium only */
+  -webkit-backdrop-filter:url(#refract) blur(7px) saturate(180%);
+  backdrop-filter:url(#refract) blur(7px) saturate(180%);
+}
+.pill::before{
+  content:""; position:absolute; inset:0; border-radius:inherit; padding:1px;
+  background:conic-gradient(from var(--light),
+    rgb(250 246 246 / .05) 0deg, rgb(250 246 246 / .55) 42deg,
+    rgb(250 246 246 / .06) 110deg, rgb(250 246 246 / .04) 250deg,
+    rgb(250 246 246 / .34) 310deg, rgb(250 246 246 / .05) 360deg);
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none; z-index:2;
+}
+.pill::after{content:""; position:absolute; inset:1px; border-radius:inherit;
+  background:linear-gradient(rgb(250 246 246 / .09), transparent 46%); pointer-events:none; z-index:1}
+.pill>*{position:relative; z-index:3}
+.pill .ot{height:21px}
+.pill nav{display:flex; align-items:center; gap:clamp(10px,2.4vw,18px); margin-left:auto}
+.pill a,.pill button{
+  background:none; border:0; padding:0; cursor:pointer; color:var(--ink);
+  font-family:inherit; font-size:var(--xs); font-weight:500; letter-spacing:.09em;
+  text-transform:uppercase; text-decoration:none; white-space:nowrap; opacity:.86;
+}
+.pill a:hover,.pill button:hover,.pill [aria-current="page"]{opacity:1}
+.pill [aria-current="page"]{text-decoration:underline; text-underline-offset:5px}
+.hair{width:1px; height:17px; background:var(--hair); flex:0 0 auto}
+.bagbtn{font-variant-numeric:tabular-nums}
+@media (max-width:560px){.hair,.hide-s{display:none}}
+
+/* ═══ views ═════════════════════════════════════════════════════════ */
+main{min-height:100svh}
+section{padding-inline:var(--gut)}
+.wrap{max-width:1240px; margin-inline:auto}
+
+/* home ── the mechanism */
+.mech{padding-block:clamp(104px,16vh,168px) clamp(40px,7vh,80px);
+  display:grid; place-items:center; gap:clamp(24px,5vh,42px); text-align:center}
+.mech-stage{position:relative; width:min(84vw,460px); aspect-ratio:1; display:grid; place-items:center}
+.mech-stage canvas{width:100%; height:100%; display:block}
+.mech-stage .core{position:absolute; inset:0; display:grid; place-items:center; pointer-events:none}
+.mech-stage .core .ot{width:15%}
+.wordmark{font-weight:300; text-transform:uppercase; letter-spacing:.44em;
+  font-size:var(--lg); padding-left:.44em}
+.wordmark .sp{display:inline-block; width:1.15em}
+
+/* the rail — product within one screen, which is the whole point */
+.rail-head{display:flex; align-items:baseline; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:20px}
+.rail{display:grid; grid-auto-flow:column; grid-auto-columns:minmax(230px,1fr);
+  gap:12px; overflow-x:auto; scroll-snap-type:x mandatory; padding-bottom:8px;
+  scrollbar-width:thin}
+@media (max-width:640px){.rail{grid-auto-columns:72%}}
+.rail>*{scroll-snap-align:start}
+
+/* the grid */
+.grid{display:grid; gap:12px; grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+@media (max-width:560px){.grid{grid-template-columns:repeat(2,1fr); gap:8px}}
+
+/* ═══ product card ══════════════════════════════════════════════════
+   The GROUND ASSIGNMENT rule, enforced in the data not in review:
+   #171717 on #0F0F0F is 1.07:1 and #A7A5A4 on #DFDDDE is 1.84:1, so every
+   colourway declares the ground it may be shown against. A mixed grid is
+   the correct outcome, not a mistake.                                    */
+.card{display:block; text-decoration:none; position:relative}
+.card .shot{position:relative; aspect-ratio:4/5; overflow:hidden; background:var(--void)}
+.card[data-bg="paper"] .shot{background:var(--paper)}
+.card .shot img{width:100%; height:100%; object-fit:cover; display:block;
+  transition:transform .6s cubic-bezier(.2,.7,.3,1)}
+.card:hover .shot img{transform:scale(1.03)}
+.card .meta{display:flex; justify-content:space-between; gap:10px; padding-top:9px; align-items:baseline}
+.card .nm{font-size:var(--sm); font-weight:500; letter-spacing:.02em}
+.card .col{font-size:var(--xs); color:var(--dim)}
+.card .pr{font-size:var(--sm); font-variant-numeric:tabular-nums; color:var(--dim)}
+.flag{position:absolute; left:0; top:0; padding:5px 9px; font-family:"IBM Plex Mono",monospace;
+  font-size:10px; letter-spacing:.16em; text-transform:uppercase;
+  background:var(--ground); color:var(--ink)}
+.card[data-bg="paper"] .flag{background:var(--paper); color:var(--paper-ink)}
+
+/* plates */
+.plate{position:relative; margin:0; background:var(--void)}
+.plate img{display:block; width:100%; height:auto}
+.plate figcaption{position:absolute; left:var(--gut); bottom:clamp(14px,3vw,26px);
+  font-family:"IBM Plex Mono",monospace; font-size:var(--xs); letter-spacing:.16em;
+  text-transform:uppercase; color:rgb(250 246 246 / .74)}
+
+/* ═══ shop ══════════════════════════════════════════════════════════ */
+.shop-head{padding-block:clamp(96px,14vh,140px) 22px}
+.filters{display:flex; gap:8px; flex-wrap:wrap; align-items:center;
+  padding-block:14px; position:sticky; top:calc(env(safe-area-inset-top,0px) + 78px);
+  background:var(--ground); z-index:40; border-bottom:1px solid var(--hair); margin-bottom:18px}
+.chip{background:none; border:1px solid var(--hair); color:var(--dim); cursor:pointer;
+  font-family:"IBM Plex Mono",monospace; font-size:var(--xs); letter-spacing:.12em;
+  text-transform:uppercase; padding:6px 11px; border-radius:2px}
+.chip[aria-pressed="true"]{border-color:var(--ink); color:var(--ink); background:rgb(250 246 246 / .07)}
+.count{margin-left:auto; font-family:"IBM Plex Mono",monospace; font-size:var(--xs); color:var(--dim)}
+
+/* ═══ PDP ═══════════════════════════════════════════════════════════ */
+.pdp{display:grid; gap:clamp(24px,4vw,52px); padding-block:clamp(96px,13vh,132px) 60px;
+  grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr)}
+@media (max-width:860px){.pdp{grid-template-columns:1fr; padding-block:clamp(88px,12vh,120px) 40px}}
+.gallery{display:grid; gap:10px}
+.gallery .shot{aspect-ratio:4/5; background:var(--void); overflow:hidden}
+.gallery[data-bg="paper"] .shot{background:var(--paper)}
+.gallery .shot img{width:100%; height:100%; object-fit:cover; display:block}
+.buy{display:grid; gap:20px; align-content:start; position:sticky; top:96px}
+@media (max-width:860px){.buy{position:static}}
+.price{font-size:var(--lg); font-variant-numeric:tabular-nums}
+.sizes{display:flex; gap:7px; flex-wrap:wrap}
+.size{min-width:52px; padding:11px 8px; background:none; cursor:pointer;
+  border:1px solid var(--hair); color:var(--ink); font-family:"IBM Plex Mono",monospace;
+  font-size:var(--xs); letter-spacing:.1em; border-radius:2px; position:relative}
+.size[aria-pressed="true"]{border-color:var(--ink); background:rgb(250 246 246 / .09)}
+.size[disabled]{color:color-mix(in oklab,var(--ink) 30%,var(--ground)); cursor:not-allowed;
+  border-color:color-mix(in oklab,var(--ink) 9%,transparent)}
+.size[disabled]::after{content:""; position:absolute; inset:50% 8px auto; height:1px;
+  background:currentColor; opacity:.6}
+.size[data-low="1"]::before{content:""; position:absolute; left:8px; right:8px; bottom:6px;
+  height:1px; background:var(--slate)}
+.soldline{font-family:"IBM Plex Mono",monospace; font-size:var(--xs); color:var(--dim);
+  letter-spacing:.08em; min-height:1.2em}
+.add{padding:16px; background:var(--ink); color:var(--ground); border:0; cursor:pointer;
+  font-family:inherit; font-size:var(--sm); font-weight:600; letter-spacing:.1em;
+  text-transform:uppercase; border-radius:2px; width:100%}
+.add[disabled]{opacity:.42; cursor:not-allowed}
+.fit{border-top:1px solid var(--hair); padding-top:18px; display:grid; gap:12px}
+.fit dl{display:grid; grid-template-columns:auto 1fr; gap:5px 16px; margin:0;
+  font-size:var(--sm)}
+.fit dt{color:var(--dim)}
+.fit dd{margin:0; text-align:right; font-variant-numeric:tabular-nums}
+.care{font-family:"IBM Plex Mono",monospace; font-size:var(--xs); line-height:1.7;
+  letter-spacing:.06em; color:var(--dim)}
+.care b{color:var(--ink); font-weight:400}
+
+/* the PDP buy bar — bottom-anchored inside the thumb arc on a phone */
+.buybar{position:fixed; left:12px; right:12px; bottom:calc(env(safe-area-inset-bottom,0px) + 12px);
+  z-index:88; display:none; gap:8px; align-items:center; padding:9px 10px; border-radius:999px;
+  background:rgb(15 15 15 / .94); border:1px solid rgb(250 246 246 / .16)}
+@supports (backdrop-filter:blur(2px)) or (-webkit-backdrop-filter:blur(2px)){
+  :root[data-tier="1"] .buybar, :root[data-tier="2"] .buybar{
+    background:rgb(15 15 15 / .5);
+    -webkit-backdrop-filter:blur(18px) saturate(180%); backdrop-filter:blur(18px) saturate(180%);
+  }
+}
+.buybar .sizes{flex:1; gap:5px; flex-wrap:nowrap; overflow-x:auto}
+.buybar .size{min-width:40px; padding:8px 5px}
+.buybar .add{width:auto; padding:11px 15px; flex:0 0 auto}
+@media (max-width:860px){ :root[data-view="product"] .buybar{display:flex} }
+
+/* ═══ bag drawer ════════════════════════════════════════════════════ */
+.scrim{position:fixed; inset:0; background:rgb(0 0 0 / .62); z-index:95; opacity:0;
+  pointer-events:none; transition:opacity .3s ease}
+.scrim[data-open="true"]{opacity:1; pointer-events:auto}
+.drawer{position:fixed; top:0; right:0; bottom:0; width:min(420px,100vw); z-index:96;
+  background:var(--ground); border-left:1px solid var(--hair);
+  transform:translateX(100%); transition:transform .36s cubic-bezier(.3,.8,.3,1);
+  display:flex; flex-direction:column}
+.drawer[data-open="true"]{transform:none}
+.drawer header{display:flex; align-items:center; justify-content:space-between;
+  padding:20px var(--gut) 14px; border-bottom:1px solid var(--hair)}
+.drawer .lines{flex:1; overflow-y:auto; padding:6px var(--gut)}
+.line{display:grid; grid-template-columns:62px 1fr auto; gap:13px; padding:14px 0;
+  border-bottom:1px solid var(--hair); align-items:start}
+.line .thumb{aspect-ratio:4/5; background:var(--void); overflow:hidden}
+.line[data-bg="paper"] .thumb{background:var(--paper)}
+.line .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.qty{display:flex; align-items:center; gap:2px; margin-top:7px}
+.qty button{width:24px;height:24px;background:none;border:1px solid var(--hair);
+  color:var(--ink);cursor:pointer;font-size:13px;line-height:1;border-radius:2px}
+.qty span{min-width:26px;text-align:center;font-variant-numeric:tabular-nums;font-size:var(--sm)}
+.drawer footer{padding:16px var(--gut) calc(env(safe-area-inset-bottom,0px) + 20px);
+  border-top:1px solid var(--hair); display:grid; gap:12px}
+.ship{font-family:"IBM Plex Mono",monospace; font-size:var(--xs); color:var(--dim); letter-spacing:.06em}
+.shipbar{height:1px; background:var(--hair); position:relative; overflow:hidden}
+.shipbar i{position:absolute; inset:0 auto 0 0; background:var(--ink); transition:width .4s ease}
+.sub{display:flex; justify-content:space-between; font-size:var(--sm); font-variant-numeric:tabular-nums}
+.empty{padding:40px 0; color:var(--dim); font-size:var(--sm)}
+
+/* ═══ misc ══════════════════════════════════════════════════════════ */
+.band{background:var(--paper); color:var(--paper-ink); padding-block:clamp(60px,9vh,110px)}
+.band p{color:var(--paper-dim)}
+.band .eyebrow{color:color-mix(in oklab,var(--paper-ink) 58%,var(--paper))}
+.foot{border-top:1px solid var(--hair); padding-block:38px 56px; color:var(--dim); font-size:var(--xs)}
+.stack{display:grid; gap:clamp(14px,2.4vh,22px)}
+/* ═══ smoothness ════════════════════════════════════════════════════
+   Route changes cross-fade rather than snapping. Native View Transitions
+   where available; a short opacity fade everywhere else.                */
+::view-transition-old(root){animation:ot-out .22s cubic-bezier(.4,0,1,1) both}
+::view-transition-new(root){animation:ot-in .42s cubic-bezier(.16,.84,.34,1) both}
+@keyframes ot-out{to{opacity:0}}
+@keyframes ot-in{from{opacity:0; transform:translateY(10px)}}
+main{transition:opacity .15s ease}
+main.leaving{opacity:0}
+/* Images fade in ONLY if they weren't already cached — a cached image is
+   painted at rest on the first frame and never gets the class. */
+img.fade{opacity:0; transition:opacity .55s cubic-bezier(.2,.7,.3,1)}
+img.fade.in{opacity:1}
+.card .shot img{transition:transform .7s cubic-bezier(.16,.84,.34,1), opacity .55s ease}
+.drawer{transition:transform .42s cubic-bezier(.16,.84,.34,1)}
+.scrim{transition:opacity .38s ease}
+@media (prefers-reduced-motion:reduce){
+  ::view-transition-old(root),::view-transition-new(root){animation:none}
+  main{transition:none} img.fade{opacity:1; transition:none}
+}
+.toast{position:fixed; left:50%; translate:-50% 0; bottom:calc(env(safe-area-inset-bottom,0px) + 86px);
+  background:var(--ink); color:var(--ground); padding:11px 17px; border-radius:2px;
+  font-size:var(--sm); font-weight:500; z-index:99; opacity:0; pointer-events:none;
+  transition:opacity .25s ease, translate .25s ease}
+.toast[data-show="true"]{opacity:1; translate:-50% -6px}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <!-- Traced from the supplied logo bitmap. 99.2% IoU against the source. -->
+  <symbol id="ot-mark" viewBox="0 0 1000 591" fill-rule="evenodd">
+    <path d="M365.91 24.24 L335.61 28.79 L302.27 39.39 L264.39 60.61 L233.33 88.64 L57.58 370.45 L43.94 405.30 L43.94 431.06 L48.48 444.70 L67.42 465.15 L96.21 475.76 L125.00 478.79 L340.15 478.79 L376.52 475.76 L420.45 463.64 L441.67 453.03 L468.94 433.33 L493.94 405.30 L585.61 248.48 L471.97 248.48 L392.42 378.03 L376.52 393.94 L361.36 403.03 L331.06 409.09 L203.79 409.09 L182.58 406.06 L171.21 394.70 L171.21 385.61 L178.79 368.94 L328.79 126.52 L344.70 107.58 L367.42 93.94 L399.24 87.88 L525.00 87.88 L541.67 90.91 L551.52 97.73 L553.03 112.88 L550.00 120.45 L488.64 222.73 L678.79 223.48 L484.09 551.52 L594.70 551.52 L792.42 225.00 L796.21 221.21 L906.82 221.21 L984.85 156.82 L644.70 156.06 L671.21 105.30 L674.24 67.42 L663.64 46.21 L640.15 30.30 L612.88 24.24 Z"/>
+  </symbol>
+  <filter id="refract" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB" x="0" y="0" width="560" height="52">
+    <feImage id="refract-map" x="0" y="0" width="560" height="52" preserveAspectRatio="none" result="map"></feImage>
+    <feDisplacementMap in="SourceGraphic" in2="map" scale="34" xChannelSelector="R" yChannelSelector="G"></feDisplacementMap>
+  </filter>
+</svg>
+
+<div id="loader">
+  <canvas id="load-mech" aria-hidden="true"></canvas>
+  <div class="load-mark">
+    <svg class="ot" style="height:26px" viewBox="0 0 1000 591" role="img" aria-label="OUR TIME"><use href="#ot-mark"/></svg>
+    <div class="load-bar"><i id="load-fill"></i></div>
+    <p class="load-note mono" id="load-note">Winding</p>
+  </div>
+</div>
+
+<div class="pillwrap">
+  <div class="pill">
+    <a href="#/" aria-label="OUR TIME — home"><svg class="ot" style="height:21px" viewBox="0 0 1000 591" aria-hidden="true"><use href="#ot-mark"/></svg></a>
+    <span class="hair" aria-hidden="true"></span>
+    <nav aria-label="Primary">
+      <a href="#/shop" data-nav="shop">Shop</a>
+      <a href="#/drop" data-nav="drop" class="hide-s">Drop 01</a>
+      <a href="#/story" data-nav="story" class="hide-s">Story</a>
+      <span class="hair" aria-hidden="true"></span>
+      <button class="bagbtn" id="bagbtn" aria-haspopup="dialog">Bag (0)</button>
+    </nav>
+  </div>
+</div>
+
+<main id="view" tabindex="-1"></main>
+
+<div class="buybar" id="buybar" role="group" aria-label="Choose a size and add to bag"></div>
+<div class="scrim" id="scrim" data-open="false"></div>
+<aside class="drawer" id="drawer" data-open="false" role="dialog" aria-modal="true" aria-label="Bag" aria-hidden="true">
+  <header>
+    <h3 style="font-size:var(--sm);letter-spacing:.14em;text-transform:uppercase" class="mono">Bag</h3>
+    <button id="closebag" style="background:none;border:0;color:var(--ink);cursor:pointer;font-size:20px;line-height:1" aria-label="Close bag">&times;</button>
+  </header>
+  <div class="lines" id="lines"></div>
+  <footer>
+    <div class="ship" id="ship"></div>
+    <div class="shipbar"><i id="shipfill" style="width:0%"></i></div>
+    <div class="sub"><span>Subtotal</span><span id="subtotal">£0</span></div>
+    <button class="add" id="checkout">Checkout</button>
+    <p class="mono" style="font-size:var(--xs);color:var(--dim);margin:0">Checkout redirects to the hosted checkout. Not wired — no storefront connected yet.</p>
+  </footer>
+</aside>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script type="module">
+import { CATALOGUE, SIZES } from './assets/catalogue.js';
+import { LocalAdapter, FREE_SHIPPING_AT } from './assets/storefront.js';
+import { createMechanism } from './assets/mechanism.js';
+
+const root = document.documentElement;
+const $ = (s, r = document) => r.querySelector(s);
+const view = $('#view');
+const shop = new LocalAdapter();
+const money = LocalAdapter.money;
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+/* ── glass tier: engine gate, never @supports ──────────────────────────
+   Firefox reports @supports(backdrop-filter:url(#x)) as TRUE and then renders
+   nothing, and the backdrop can't be read back from JS, so there is no pixel
+   probe. Engine detection is the only honest gate. Re-test when WebKit
+   PR 68614 lands. Tier 2 is the product; Tier 1 is a desktop bonus.       */
+const ua = navigator.userAgent;
+const isChromium = (!!window.chrome && /Chrome|Chromium/.test(ua) && !/OPR|Edg\//.test(ua)) || /Edg\//.test(ua);
+const hasBF = CSS.supports('backdrop-filter', 'blur(2px)') || CSS.supports('-webkit-backdrop-filter', 'blur(2px)');
+root.setAttribute('data-tier', (isChromium && CSS.supports('backdrop-filter', 'url(#refract)')) ? '1' : hasBF ? '2' : '3');
+
+function buildRefractionMap() {
+  const pill = $('.pill'); if (!pill) return;
+  const r = pill.getBoundingClientRect();
+  const w = Math.max(2, Math.round(r.width)), h = Math.max(2, Math.round(r.height));
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const cx = c.getContext('2d'); if (!cx) return;
+  const img = cx.createImageData(w, h), d = img.data, rad = h / 2, edge = Math.min(15, h / 2.4);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const qx = Math.abs(x - w / 2) - (w / 2 - rad), qy = Math.abs(y - h / 2) - (h / 2 - rad);
+    const ax = Math.max(qx, 0), ay = Math.max(qy, 0);
+    const dist = Math.hypot(ax, ay) + Math.min(Math.max(qx, qy), 0) - rad;
+    const t = Math.min(1, Math.max(0, (dist + edge) / edge)), f = t * t;
+    const nx = x - w / 2, ny = y - h / 2, len = Math.hypot(nx, ny) || 1, i = (y * w + x) * 4;
+    d[i] = Math.round(128 + (nx / len) * f * 127);
+    d[i + 1] = Math.round(128 + (ny / len) * f * 127);
+    d[i + 2] = 128; d[i + 3] = 255;
+  }
+  cx.putImageData(img, 0, 0);
+  const url = c.toDataURL(), el = $('#refract-map');
+  el.setAttributeNS('http://www.w3.org/1999/xlink', 'href', url);
+  el.setAttribute('href', url);
+  [el, $('#refract')].forEach((n) => { n.setAttribute('width', w); n.setAttribute('height', h); });
+}
+
+/* ── the loader: the mechanism winding up ─────────────────────────────── */
+const loadMech = createMechanism($('#load-mech'), { detail: false, depth: 2, ambientMs: 9000 });
+loadMech.fit().replay();
+let loadPct = 0;
+const setLoad = (p, note) => {
+  loadPct = Math.max(loadPct, p);
+  $('#load-fill').style.width = loadPct + '%';
+  if (note) $('#load-note').textContent = note;
+};
+setLoad(15, 'Winding');
+
+async function dismissLoader() {
+  setLoad(100, 'Ready');
+  await new Promise((r) => setTimeout(r, 260));
+  const el = $('#loader');
+  el.hidden = true;
+  setTimeout(() => loadMech.stop(), 600);
+}
+
+/* ── cart ─────────────────────────────────────────────────────────────── */
+async function paintCart() {
+  const cart = await shop.getCart();
+  const n = LocalAdapter.count(cart), sub = LocalAdapter.subtotal(cart);
+  $('#bagbtn').textContent = `Bag (${n})`;
+  $('#subtotal').textContent = money(sub);
+  const remain = Math.max(0, FREE_SHIPPING_AT - sub);
+  $('#ship').textContent = n === 0 ? '' : remain > 0 ? `${money(remain)} to free UK shipping` : 'Free UK shipping';
+  $('#shipfill').style.width = Math.min(100, (sub / FREE_SHIPPING_AT) * 100) + '%';
+  $('#checkout').disabled = n === 0;
+  $('#lines').innerHTML = n === 0
+    ? '<p class="empty">Nothing in the bag.</p>'
+    : cart.lines.map((l) => {
+        const p = CATALOGUE.find((x) => x.handle === l.handle);
+        return `<div class="line" data-bg="${p?.bg || 'dark'}">
+          <a class="thumb" href="#/p/${esc(l.handle)}"><img src="${esc(l.img)}" alt="" loading="lazy"></a>
+          <div>
+            <div style="font-size:var(--sm);font-weight:500">${esc(l.name)}</div>
+            <div style="font-size:var(--xs);color:var(--dim)">${esc(l.colour)} \u00B7 ${esc(l.size)}</div>
+            <div class="qty">
+              <button data-q="-1" data-v="${esc(l.variantId)}" aria-label="Remove one">&minus;</button>
+              <span>${l.qty}</span>
+              <button data-q="1" data-v="${esc(l.variantId)}" aria-label="Add one">+</button>
+            </div>
+          </div>
+          <div style="font-variant-numeric:tabular-nums;font-size:var(--sm)">${money(l.price * l.qty)}</div>
+        </div>`;
+      }).join('');
+}
+
+$('#lines').addEventListener('click', async (e) => {
+  const b = e.target.closest('button[data-q]'); if (!b) return;
+  const cart = await shop.getCart();
+  const line = cart.lines.find((l) => l.variantId === b.dataset.v);
+  await shop.setQty(b.dataset.v, (line?.qty || 0) + Number(b.dataset.q));
+  paintCart();
+});
+
+const openBag = (open) => {
+  $('#drawer').dataset.open = String(open);
+  $('#drawer').setAttribute('aria-hidden', String(!open));
+  $('#scrim').dataset.open = String(open);
+  if (open) $('#closebag').focus();
+};
+$('#bagbtn').onclick = () => openBag(true);
+$('#closebag').onclick = () => openBag(false);
+$('#scrim').onclick = () => openBag(false);
+addEventListener('keydown', (e) => { if (e.key === 'Escape') openBag(false); });
+$('#checkout').onclick = () => toast('Checkout redirects out to hosted checkout \u2014 no storefront connected yet.');
+
+let toastT;
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.dataset.show = 'true';
+  clearTimeout(toastT); toastT = setTimeout(() => (t.dataset.show = 'false'), 2600);
+}
+
+/* ── card ─────────────────────────────────────────────────────────────── */
+const card = (p) => `
+  <a class="card" href="#/p/${esc(p.handle)}" data-bg="${p.bg}">
+    <div class="shot">
+      <img src="${esc(p.img)}" alt="${esc(p.name)} in ${esc(p.colour)}" loading="lazy" width="900" height="1125">
+      ${p.status === 'soon' ? '<span class="flag">Drop 02</span>' : ''}
+      ${p.status === 'live' && p.sold.length ? '<span class="flag">Low stock</span>' : ''}
+    </div>
+    <div class="meta">
+      <span><span class="nm">${esc(p.name)}</span><br><span class="col">${esc(p.colour)}</span></span>
+      <span class="pr">${esc(p.priceFormatted)}</span>
+    </div>
+  </a>`;
+
+/* ── views ────────────────────────────────────────────────────────────── */
+async function home() {
+  const live = await shop.listProducts({ status: 'live' });
+  root.setAttribute('data-view', 'home');
+  view.innerHTML = `
+    <section class="mech">
+      <div class="mech-stage">
+        <canvas id="mech" role="img" aria-label="The Mechanism: concentric clockwork rings turning at fixed gear ratios around the OT monogram"></canvas>
+        <div class="core"><svg class="ot" viewBox="0 0 1000 591" aria-hidden="true"><use href="#ot-mark"/></svg></div>
+      </div>
+      <div class="stack" style="justify-items:center">
+        <p class="eyebrow">Drop 01 \u00B7 The first hours</p>
+        <p class="wordmark">Our<span class="sp"> </span>Time</p>
+      </div>
+    </section>
+
+    <section class="wrap" style="padding-block:0 clamp(56px,8vh,90px)">
+      <div class="rail-head">
+        <h2>The first hours.</h2>
+        <a href="#/shop" class="mono" style="font-size:var(--xs);letter-spacing:.14em;text-transform:uppercase;color:var(--dim)">All ${CATALOGUE.length} pieces &rarr;</a>
+      </div>
+      <div class="rail">${live.map(card).join('')}</div>
+    </section>
+
+    <figure class="plate">
+      <img src="assets/plate-globe-1100.webp"
+           srcset="assets/plate-globe-1100.webp 1100w, assets/plate-globe-2200.webp 2200w" sizes="100vw"
+           width="2200" height="1772" alt="White oversized tee, front and back, with the orbital globe back print">
+      <figcaption>1200 Tee / Globe \u00B7 Drop 02</figcaption>
+    </figure>
+
+    <section class="band">
+      <div class="wrap stack">
+        <p class="eyebrow">The index</p>
+        <h2 style="max-width:18ch">The hour belongs to the colour.</h2>
+        <p style="max-width:56ch">Every colour we make is assigned the hour it looks like, and it keeps that
+        hour forever. <b>0300</b> is washed black \u2014 the dead hour, the darkest thing we make.
+        <b>1600</b> is washed denim. <b>2200</b> is navy, which reads black indoors.</p>
+        <p style="max-width:56ch">So a piece is named for its hour and its shape: <b>0600 Crew</b>. Nothing else.
+        And because the hour belongs to the colour and not the garment, everything at one hour is a set.</p>
+      </div>
+    </section>
+
+    <figure class="plate">
+      <img src="assets/plate-jeans-1100.webp"
+           srcset="assets/plate-jeans-1100.webp 1100w, assets/plate-jeans-2200.webp 2200w" sizes="100vw"
+           width="2200" height="1772" loading="lazy" alt="Washed black baggy jeans, front and back">
+      <figcaption>0300 Jean / Pattern \u00B7 Drop 03</figcaption>
+    </figure>
+
+    <section class="wrap foot">
+      <p class="mono">OUR TIME &middot; EST. 2026 &middot; EARN EVERY SECOND.</p>
+      <p class="mono" style="margin-top:.6em">Prototype on a local catalogue. Archivo and IBM Plex Mono stand in for the licensed faces.</p>
+    </section>`;
+
+  const m = createMechanism($('#mech'), { detail: true, depth: 3 });
+  m.fit().replay();
+  activeMech = m;
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver((es) => es[0].isIntersecting ? m.start() : m.stop(), { threshold: 0.01 }).observe($('#mech'));
+  }
+}
+
+let filters = { type: null };
+async function shopView() {
+  root.setAttribute('data-view', 'shop');
+  const types = [...new Set(CATALOGUE.map((p) => p.type))];
+  const items = await shop.listProducts(filters.type ? { type: filters.type } : {});
+  view.innerHTML = `
+    <section class="wrap shop-head stack">
+      <p class="eyebrow">The ledger</p>
+      <h2>Everything, newest first.</h2>
+      <p>Sorted by when it was made. Category is a filter on top of that, never instead of it.</p>
+    </section>
+    <section class="wrap">
+      <div class="filters">
+        <button class="chip" data-type="" aria-pressed="${!filters.type}">All</button>
+        ${types.map((t) => `<button class="chip" data-type="${t}" aria-pressed="${filters.type === t}">${t}</button>`).join('')}
+        <span class="count">${items.length} pieces</span>
+      </div>
+      <div class="grid">${items.map(card).join('')}</div>
+      <div class="foot" style="margin-top:40px"><p class="mono">Drop 01 is six colourways. The rest follow.</p></div>
+    </section>`;
+  view.querySelectorAll('.chip').forEach((c) => c.onclick = () => { filters.type = c.dataset.type || null; shopView(); });
+}
+
+async function product(handle) {
+  const p = await shop.getProduct(handle);
+  if (!p) return notFound();
+  root.setAttribute('data-view', 'product');
+  const siblings = CATALOGUE.filter((x) => x.type === p.type && x.print === p.print && x.handle !== p.handle);
+  const sizeBtns = (cls = '') => p.variants.map((v) => `
+    <button class="size ${cls}" data-size="${v.size}" aria-pressed="false"
+      ${v.available ? '' : 'disabled'}
+      data-low="${v.available && v.quantityAvailable !== null && v.quantityAvailable <= 4 ? 1 : 0}"
+      data-sold="${v.soldOutAt ? esc(v.soldOutAt) : ''}">${v.size}</button>`).join('');
+
+  view.innerHTML = `
+    <section class="wrap pdp">
+      <div class="gallery" data-bg="${p.bg}">
+        <div class="shot"><img src="${esc(p.img)}" alt="${esc(p.name)} in ${esc(p.colour)}" width="900" height="1125"></div>
+      </div>
+      <div class="buy stack">
+        <div class="stack" style="gap:6px">
+          <p class="eyebrow">${p.status === 'live' ? 'Drop 01 \u00B7 Available now' : 'Drop 02'}</p>
+          <h2 style="font-size:var(--lg)">${esc(p.name)}</h2>
+          <p style="color:var(--dim)">${esc(p.colour)}</p>
+          <p class="price">${esc(p.priceFormatted)}</p>
+        </div>
+        <p>${esc(p.blurb)}</p>
+        <div class="stack" style="gap:9px">
+          <p class="eyebrow">Size</p>
+          <div class="sizes" id="sizes">${sizeBtns()}</div>
+          <p class="soldline" id="soldline"></p>
+        </div>
+        <button class="add" id="addbtn" ${p.status === 'live' ? '' : 'disabled'}>
+          ${p.status === 'live' ? 'Add to bag' : 'Drop 02 \u2014 not yet'}
+        </button>
+        ${siblings.length ? `<div class="stack" style="gap:9px">
+          <p class="eyebrow">Other hours</p>
+          <div class="sizes">${siblings.map((s) => `<a class="size" href="#/p/${esc(s.handle)}" style="text-decoration:none;display:grid;place-items:center">${s.hour}</a>`).join('')}</div>
+        </div>` : ''}
+        <div class="fit">
+          <p class="eyebrow">Fit &amp; care</p>
+          <dl>
+            <dt>Model</dt><dd>183cm, wearing L</dd>
+            <dt>Body length, L</dt><dd>74cm</dd>
+            <dt>Chest, L</dt><dd>62cm flat</dd>
+            <dt>Fabric</dt><dd>Garment-dyed, pre-shrunk</dd>
+          </dl>
+          <p class="care"><b>WASH COLD 30&deg;. INSIDE OUT. HANG DRY. DO NOT TUMBLE DRY. COOL IRON \u2014 NOT ON PRINT.</b><br>
+          Garment-dyed heavyweight will shrink about 3% in length on a first hot wash and will keep fading. It will fade. That is the point.</p>
+        </div>
+      </div>
+    </section>`;
+
+  let chosen = null;
+  const buybar = $('#buybar');
+  buybar.innerHTML = p.status === 'live'
+    ? `<div class="sizes" id="bsizes">${sizeBtns('b')}</div><button class="add" id="baddbtn">Add</button>`
+    : `<span class="mono" style="font-size:var(--xs);letter-spacing:.14em;padding-inline:8px;color:var(--dim)">Drop 02 \u2014 not yet</span>`;
+
+  function pick(size, from) {
+    chosen = size;
+    document.querySelectorAll('.size[data-size]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.size === size)));
+    const v = p.variants.find((x) => x.size === size);
+    const line = $('#soldline');
+    if (line) {
+      line.textContent = !v ? '' :
+        !v.available && v.soldOutAt ? `SOLD OUT \u2014 ${v.soldOutAt}` :
+        !v.available ? 'Not in this drop' :
+        v.quantityAvailable !== null && v.quantityAvailable <= 4 ? `${v.quantityAvailable} left` : '';
+    }
+  }
+  view.addEventListener('click', (e) => { const b = e.target.closest('.size[data-size]'); if (b && !b.disabled) pick(b.dataset.size); });
+  buybar.addEventListener('click', (e) => { const b = e.target.closest('.size[data-size]'); if (b && !b.disabled) pick(b.dataset.size); });
+
+  async function add() {
+    if (!chosen) { toast('Choose a size first.'); return; }
+    try {
+      await shop.addLine(`${p.handle}--${chosen}`);
+      await paintCart(); openBag(true);
+    } catch (err) { toast(err.message); }
+  }
+  $('#addbtn') && ($('#addbtn').onclick = add);
+  $('#baddbtn') && ($('#baddbtn').onclick = add);
+}
+
+function simple(title, body) {
+  root.setAttribute('data-view', 'page');
+  view.innerHTML = `<section class="wrap shop-head stack" style="min-height:70svh">
+    <p class="eyebrow">OUR TIME</p><h2>${title}</h2>${body}</section>`;
+}
+const notFound = () => simple('Nothing at this hour.',
+  `<p>That page does not exist. <a href="#/shop" style="color:var(--ink)">The ledger</a> does.</p>`);
+
+/* ── router ───────────────────────────────────────────────────────────── */
+let activeMech = null;
+
+/** Cross-fade a view swap: native View Transitions, else a short opacity fade. */
+let firstRoute = true;
+async function swap(render) {
+  // The first route happens behind the loader — transitioning it is wasted work.
+  if (firstRoute) { firstRoute = false; await render(); return; }
+  if (!reduceMo.matches && typeof document.startViewTransition === 'function') {
+    let vt = null;
+    try { vt = document.startViewTransition(render); } catch { vt = null; }
+    if (vt) {
+      // ready/finished REJECT whenever a transition is skipped — a backgrounded
+      // tab, or a second navigation landing mid-flight. That is normal, not an
+      // error, but unhandled it surfaces as InvalidStateError. Await the DOM
+      // callback instead, which resolves whether or not the animation ran.
+      vt.ready?.catch(() => {});
+      vt.finished?.catch(() => {});
+      await vt.updateCallbackDone.catch(() => {});
+      return;
+    }
+  }
+  view.classList.add('leaving');
+  await new Promise((r) => setTimeout(r, 150));
+  await render();
+  view.classList.remove('leaving');
+}
+
+async function route() {
+  if (activeMech) { activeMech.stop(); activeMech = null; }
+  $('#buybar').innerHTML = '';
+  const h = location.hash.replace(/^#/, '') || '/';
+  const seg = h.split('/').filter(Boolean);
+  document.querySelectorAll('[data-nav]').forEach((a) => a.removeAttribute('aria-current'));
+
+  await swap(async () => {
+    if (seg[0] === 'p' && seg[1]) await product(seg[1]);
+    else if (seg[0] === 'shop') { await shopView(); $('[data-nav="shop"]')?.setAttribute('aria-current', 'page'); }
+    else if (seg[0] === 'drop') { simple('Drop 01.', '<p>Six colourways, 320 pieces. The window opens when the stock lands \u2014 there is no countdown running because nothing is closing yet.</p>'); $('[data-nav="drop"]')?.setAttribute('aria-current', 'page'); }
+    else if (seg[0] === 'story') { simple('Our time.', '<p>EARN EVERY SECOND and TIME WON\u2019T WAIT are the work. OUR TIME is what comes after it \u2014 the arc, not one half of it.</p><p style="margin-top:1em">Every colour we make is assigned an hour and keeps it forever, so the range reads as a day rather than a list. A piece is named for its hour and its shape. Nothing else.</p>'); $('[data-nav="story"]')?.setAttribute('aria-current', 'page'); }
+    else if (seg.length === 0) await home();
+    else notFound();
+    scrollTo({ top: 0, behavior: 'instant' });
+    fadeIn(view);
+  });
+  view.focus({ preventScroll: true });
+}
+addEventListener('hashchange', route);
+
+/* ── the flywheel ─────────────────────────────────────────────────────
+   Scroll sets a TARGET and a damped loop chases it, so the gear train keeps
+   turning for a moment after you stop — the way a flywheel does. Driving the
+   rotation straight off scrollY snaps, and snapping is what read as rough. */
+const reduceMo = matchMedia('(prefers-reduced-motion: reduce)');
+let targetP = 0, curP = 0, flyRaf = 0;
+const applyScroll = () => {
+  root.style.setProperty('--light', (curP * 360).toFixed(2) + 'deg');
+  activeMech?.setTurn(curP * Math.PI * 3);
+};
+function flywheel() {
+  const d = targetP - curP;
+  if (Math.abs(d) < 0.0002) { curP = targetP; flyRaf = 0; applyScroll(); return; }
+  curP += d * 0.09;
+  applyScroll();
+  flyRaf = requestAnimationFrame(flywheel);
+}
+addEventListener('scroll', () => {
+  const max = document.documentElement.scrollHeight - innerHeight;
+  targetP = max > 0 ? Math.min(1, Math.max(0, scrollY / max)) : 0;
+  if (reduceMo.matches) { curP = targetP; applyScroll(); return; }
+  if (!flyRaf) flyRaf = requestAnimationFrame(flywheel);
+}, { passive: true });
+
+/* Fade in images that weren't already cached. One that IS cached is left
+   alone so the page is painted at rest on the very first frame. */
+function fadeIn(scope) {
+  scope.querySelectorAll('img').forEach((img) => {
+    img.decoding = 'async';
+    if (img.complete) return;
+    img.classList.add('fade');
+    const done = () => img.classList.add('in');
+    img.addEventListener('load', done, { once: true });
+    img.addEventListener('error', done, { once: true });
+  });
+}
+
+addEventListener('resize', () => { buildRefractionMap(); activeMech?.fit(); loadMech.fit(); });
+
+/* ── boot ─────────────────────────────────────────────────────────────── */
+(async function boot() {
+  buildRefractionMap();
+  setLoad(35, 'Setting type');
+  if (document.fonts) { try { await document.fonts.ready; } catch { /* non-fatal */ } }
+  setLoad(60, 'Loading the drop');
+  await route();
+  await paintCart();
+  setLoad(85, 'Ready');
+  // give the first view's images a moment, but never hold the page hostage
+  await Promise.race([
+    Promise.all([...view.querySelectorAll('img')].slice(0, 4).map((i) => i.complete ? null : new Promise((r) => { i.onload = i.onerror = r; }))),
+    new Promise((r) => setTimeout(r, 1400)),
+  ]);
+  await dismissLoader();
+})();
+</script>

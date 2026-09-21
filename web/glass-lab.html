@@ -1,0 +1,655 @@
+<title>OUR TIME Mechanism</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,300;0,400;0,500;0,600;0,700;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+/* ── OUR TIME · tokens ──────────────────────────────────────────────
+   Single-theme by decision: the brand's world is its near-black ground.
+   Every colour is measured from the supplied garment renders, never invented. */
+:root{
+  --ot-ground:#0F0F0F;   /* the page. never #000 */
+  --ot-void:#000000;     /* photographic backdrop INSIDE images only */
+  --ot-ink:#FAF6F6;      /* bone. 17.9:1 on ground. not #FFF */
+  --ot-paper:#DFDDDE;
+  --ot-navy:#141B2C;
+  --ot-slate:#54647E;    /* the single accent */
+  --ot-sand:#CFC2B4;
+  --ot-coal:#171717;     /* washed black. 1.07:1 on ground — NEVER on it */
+
+  --ot-dim:color-mix(in oklab, var(--ot-ink) 52%, var(--ot-ground));
+  --ot-hair:color-mix(in oklab, var(--ot-ink) 18%, transparent);
+
+  --step--1:clamp(.69rem,.66rem + .14vw,.76rem);
+  --step-0:clamp(.88rem,.84rem + .2vw,1rem);
+  --step-2:clamp(1.4rem,1.2rem + 1vw,2rem);
+  --step-4:clamp(2.2rem,1.5rem + 3.6vw,4.6rem);
+  --step-5:clamp(2.8rem,1.5rem + 6.4vw,8rem);
+
+  --pill-w:min(560px, calc(100vw - 24px));
+  --light:0deg;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+
+body{
+  margin:0; background:var(--ot-ground); color:var(--ot-ink);
+  font-family:Archivo,"Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-size:var(--step-0); line-height:1.55;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+
+/* ── the one piece of chrome ─────────────────────────────────────── */
+.pillwrap{
+  position:fixed; left:0; right:0;
+  top:calc(env(safe-area-inset-top,0px) + 14px);
+  display:flex; justify-content:center; pointer-events:none; z-index:80;
+}
+.pill{
+  pointer-events:auto; position:relative;
+  width:var(--pill-w); height:52px; border-radius:999px;
+  display:flex; align-items:center; gap:clamp(10px,2.4vw,22px);
+  padding-inline:clamp(12px,3vw,20px); isolation:isolate;
+  background:rgb(15 15 15 / .94);                 /* TIER 3 — the floor */
+  border:1px solid rgb(250 246 246 / .14);
+  transition:background .25s ease, border-color .25s ease;
+}
+@supports (backdrop-filter:blur(2px)) or (-webkit-backdrop-filter:blur(2px)){
+  :root[data-tier="2"] .pill, :root[data-tier="1"] .pill{   /* TIER 2 — the product */
+    background:rgb(15 15 15 / .42);
+    -webkit-backdrop-filter:blur(18px) saturate(180%) brightness(1.06);
+    backdrop-filter:blur(18px) saturate(180%) brightness(1.06);
+  }
+}
+:root[data-tier="1"] .pill{                                  /* TIER 1 — Chromium only */
+  -webkit-backdrop-filter:url(#ot-refract) blur(7px) saturate(180%);
+  backdrop-filter:url(#ot-refract) blur(7px) saturate(180%);
+}
+.pill::before{
+  content:""; position:absolute; inset:0; border-radius:inherit; padding:1px;
+  background:conic-gradient(from var(--light),
+    rgb(250 246 246 / .05) 0deg, rgb(250 246 246 / .55) 42deg,
+    rgb(250 246 246 / .06) 110deg, rgb(250 246 246 / .04) 250deg,
+    rgb(250 246 246 / .34) 310deg, rgb(250 246 246 / .05) 360deg);
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude;
+  pointer-events:none; z-index:2;
+}
+.pill::after{
+  content:""; position:absolute; inset:1px; border-radius:inherit; pointer-events:none;
+  background:linear-gradient(rgb(250 246 246 / .09), transparent 46%); z-index:1;
+}
+.pill > *{position:relative; z-index:3}
+.mono-mark{height:22px; width:auto; mix-blend-mode:screen; flex:0 0 auto}
+.pill nav{display:flex; align-items:center; gap:clamp(10px,2.4vw,20px); margin-left:auto}
+.pill a{
+  color:var(--ot-ink); text-decoration:none; font-size:var(--step--1); font-weight:500;
+  letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; opacity:.88;
+}
+.pill a:hover{opacity:1}
+.pill a:focus-visible,.ctl:focus-visible,.tierbtn:focus-visible,.mbtn:focus-visible{
+  outline:2px solid var(--ot-ink); outline-offset:2px;
+  box-shadow:0 0 0 6px var(--ot-ground); border-radius:4px;
+}
+.bag{font-variant-numeric:tabular-nums}
+.hair{width:1px; height:18px; background:var(--ot-hair); flex:0 0 auto}
+@media (max-width:560px){ .hair,.pill .hide-s{display:none} }
+
+/* ── layout ───────────────────────────────────────────────────────── */
+section{padding-block:clamp(72px,13vh,130px); padding-inline:max(16px,4vw)}
+.wrap{max-width:1180px; margin-inline:auto}
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:var(--step--1); letter-spacing:.22em; text-transform:uppercase; color:var(--ot-dim);
+}
+h1{font-size:var(--step-5); font-weight:600; line-height:.92; letter-spacing:-.03em; margin:.24em 0 .12em; text-wrap:balance}
+h2{font-size:var(--step-4); font-weight:600; line-height:.96; letter-spacing:-.025em; margin:0 0 .3em; text-wrap:balance}
+p{max-width:62ch; color:var(--ot-dim)}
+p strong{color:var(--ot-ink); font-weight:500}
+code{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.92em; color:var(--ot-sand)}
+.paper code{color:color-mix(in oklab, var(--ot-navy) 80%, var(--ot-paper))}
+
+/* ── THE MECHANISM ────────────────────────────────────────────────── */
+.mech{
+  padding-block:clamp(96px,15vh,150px) clamp(48px,8vh,90px);
+  display:grid; place-items:center; gap:clamp(26px,5vh,48px);
+  text-align:center;
+}
+.mech-stage{
+  position:relative; width:min(86vw,520px); aspect-ratio:1;
+  display:grid; place-items:center;
+}
+.mech-stage canvas{width:100%; height:100%; display:block}
+.mech-core{
+  position:absolute; inset:0; display:grid; place-items:center; pointer-events:none;
+}
+.mech-core img{width:16%; height:auto; mix-blend-mode:screen; opacity:.96}
+.mech-copy{display:grid; gap:.5em; justify-items:center}
+.wordmark{
+  font-weight:300; text-transform:uppercase; letter-spacing:.44em;
+  font-size:var(--step-2); color:var(--ot-ink); display:inline-block;
+  padding-left:.44em; /* optical: the trailing letter-space would push it off-centre */
+}
+.wordmark .sp{display:inline-block; width:1.15em}
+.mech-controls{display:flex; gap:8px; flex-wrap:wrap; justify-content:center}
+.mbtn{
+  background:none; border:1px solid var(--ot-hair); color:var(--ot-dim);
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px;
+  letter-spacing:.12em; text-transform:uppercase; padding:7px 13px;
+  border-radius:2px; cursor:pointer;
+}
+.mbtn[aria-pressed="true"]{border-color:var(--ot-ink); color:var(--ot-ink); background:rgb(250 246 246 / .07)}
+
+/* ── plates ───────────────────────────────────────────────────────── */
+.plate{position:relative; padding:0; margin:0; background:var(--ot-void)}
+.plate img{display:block; width:100%; height:auto}
+.plate figcaption{
+  position:absolute; left:max(16px,4vw); bottom:clamp(14px,3vw,28px);
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:var(--step--1);
+  letter-spacing:.16em; text-transform:uppercase; color:rgb(250 246 246 / .72);
+}
+.paper{background:var(--ot-paper); color:var(--ot-navy)}
+.paper p{color:color-mix(in oklab, var(--ot-navy) 74%, var(--ot-paper))}
+.paper .eyebrow{color:color-mix(in oklab, var(--ot-navy) 58%, var(--ot-paper))}
+
+.swatches{display:flex; flex-wrap:wrap; gap:10px; margin-top:22px; padding:0; list-style:none}
+.sw{
+  display:flex; align-items:center; gap:9px;
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:var(--step--1);
+  letter-spacing:.06em; border:1px solid var(--ot-hair); border-radius:2px; padding:7px 11px;
+}
+.paper .sw{border-color:color-mix(in oklab, var(--ot-navy) 22%, transparent)}
+.chip{width:15px; height:15px; border-radius:1px; flex:0 0 auto; outline:1px solid rgb(128 128 128 / .35)}
+
+/* ── diagnostics ──────────────────────────────────────────────────── */
+.lab{
+  position:fixed; z-index:90; right:max(12px,2vw);
+  bottom:calc(env(safe-area-inset-bottom,0px) + 12px);
+  width:min(320px, calc(100vw - 24px));
+  background:rgb(15 15 15 / .96); border:1px solid var(--ot-hair); border-radius:3px;
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; line-height:1.5;
+  box-shadow:0 18px 50px rgb(0 0 0 / .6);
+}
+.lab-head{
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  padding:9px 11px; border-bottom:1px solid var(--ot-hair);
+  letter-spacing:.14em; text-transform:uppercase; color:var(--ot-dim); font-size:11px;
+}
+.ctl{background:none; border:1px solid var(--ot-hair); color:var(--ot-ink); font:inherit; padding:2px 8px; border-radius:2px; cursor:pointer}
+.lab-body{padding:10px 11px; display:grid; gap:7px}
+.row{display:flex; justify-content:space-between; gap:12px; align-items:baseline}
+.row dt{color:var(--ot-dim); letter-spacing:.06em}
+.row dd{margin:0; text-align:right; font-variant-numeric:tabular-nums; color:var(--ot-ink)}
+dl{margin:0}
+.verdict{font-size:11px; line-height:1.5; color:var(--ot-dim); border-top:1px solid var(--ot-hair); padding-top:9px; margin:2px 0 0}
+.ok{color:#7FA05F} .no{color:#B4685E} .warn{color:var(--ot-sand)}
+.tiers{display:flex; gap:6px; margin-top:3px}
+.tierbtn{flex:1; background:none; border:1px solid var(--ot-hair); color:var(--ot-dim); font:inherit; font-size:11px; padding:5px 0; border-radius:2px; cursor:pointer}
+.tierbtn[aria-pressed="true"]{border-color:var(--ot-ink); color:var(--ot-ink); background:rgb(250 246 246 / .07)}
+.lab[data-open="false"] .lab-body{display:none}
+
+.foot{border-top:1px solid var(--ot-hair); padding-block:40px 60px; color:var(--ot-dim); font-size:var(--step--1)}
+.note{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:var(--step--1); letter-spacing:.04em}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <filter id="ot-refract" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"
+          x="0" y="0" width="560" height="52">
+    <feImage id="ot-map" x="0" y="0" width="560" height="52" preserveAspectRatio="none" result="map"></feImage>
+    <feDisplacementMap in="SourceGraphic" in2="map" scale="36" xChannelSelector="R" yChannelSelector="G"></feDisplacementMap>
+  </filter>
+</svg>
+
+<div class="pillwrap">
+  <div class="pill">
+    <img class="mono-mark" src="assets/ot-monogram.webp" alt="OUR TIME" width="528" height="312">
+    <span class="hair" aria-hidden="true"></span>
+    <nav aria-label="Primary">
+      <a href="#glass">Shop</a>
+      <a href="#fit" class="hide-s">Drop 01</a>
+      <a href="#story" class="hide-s">Story</a>
+      <span class="hair" aria-hidden="true"></span>
+      <a href="#bag" class="bag">Bag (2)</a>
+    </nav>
+  </div>
+</div>
+
+<section class="mech">
+  <div class="mech-stage">
+    <canvas id="mech" role="img"
+      aria-label="The Mechanism: concentric clockwork rings with Roman numerals and orbital ellipses turning at fixed gear ratios around the OT monogram"></canvas>
+    <div class="mech-core"><img src="assets/ot-monogram.webp" alt="" width="528" height="312"></div>
+  </div>
+  <div class="mech-copy">
+    <p class="eyebrow" style="margin:0">The Mechanism</p>
+    <p style="margin:0"><span class="wordmark">Our<span class="sp"> </span>Time</span></p>
+  </div>
+  <div class="mech-controls" role="group" aria-label="Mechanism controls">
+    <button class="mbtn" id="m-replay">Replay wind-up</button>
+    <button class="mbtn" id="m-scroll" aria-pressed="true">Scroll drives it</button>
+    <button class="mbtn" id="m-still" aria-pressed="false">Still frame</button>
+  </div>
+</section>
+
+<section class="wrap" id="glass">
+  <p class="eyebrow">01 — What you are looking at</p>
+  <h2>Gear ratios, not spinning circles.</h2>
+  <p>Five concentric rings turn at <strong>fixed integer ratios</strong> —
+  <code>−1 : +2 : −3 : +6 : −12</code> — which is what makes clockwork read as a mechanism
+  rather than as decoration. Because the ratios are whole numbers the rings drift apart and
+  periodically <em>realign</em>, exactly as a real gear train does. The escapement ring
+  doesn't glide: it advances in <strong>60 discrete steps</strong>, and that single stepped
+  element is what sells the whole thing.</p>
+  <p>It is drawn procedurally to Canvas at your device's full pixel ratio, so it is
+  razor-sharp on any screen and weighs <strong>nothing</strong> — no video file, no image
+  sequence, no 3D library. Scroll the page and the mechanism advances with you.</p>
+  <ul class="swatches">
+    <li class="sw"><span class="chip" style="background:#0F0F0F"></span>#0F0F0F ground</li>
+    <li class="sw"><span class="chip" style="background:#FAF6F6"></span>#FAF6F6 bone</li>
+    <li class="sw"><span class="chip" style="background:#54647E"></span>#54647E slate</li>
+    <li class="sw"><span class="chip" style="background:#CFC2B4"></span>#CFC2B4 sand</li>
+    <li class="sw"><span class="chip" style="background:#141B2C"></span>#141B2C navy</li>
+  </ul>
+</section>
+
+<figure class="plate">
+  <img src="assets/plate-shorts-1100.webp"
+       srcset="assets/plate-shorts-1100.webp 1100w, assets/plate-shorts-2200.webp 2200w"
+       sizes="100vw" width="2200" height="1772" fetchpriority="high"
+       alt="Sweat shorts in washed grey and washed denim, front and back, flat-lay on black">
+  <figcaption>Sweat short · washed grey, washed denim · drop 01</figcaption>
+</figure>
+
+<figure class="plate">
+  <img src="assets/plate-jeans-1100.webp"
+       srcset="assets/plate-jeans-1100.webp 1100w, assets/plate-jeans-2200.webp 2200w"
+       sizes="100vw" width="2200" height="1772" loading="lazy"
+       alt="Washed black baggy jeans, front and back, with the corrected OUR TIME leg and waistband marks">
+  <figcaption>Baggy jean · washed black · renamed 16.09.26</figcaption>
+</figure>
+
+<section class="paper" id="fit">
+  <div class="wrap">
+    <p class="eyebrow">02 — The hard case</p>
+    <h2>Now the glass is over paper.</h2>
+    <p>This is the section that breaks most glass navs. Bone ink on a light ground has
+    nothing to hold onto, so the pill has to carry its own contrast rather than borrow it
+    from the page. Scroll slowly through this boundary and check the nav stays readable
+    the whole way.</p>
+    <p><strong>Two colours in this brand are traps, and they get enforced in the schema
+    rather than noticed in review.</strong> Washed black <code>#171717</code> on the ground
+    <code>#0F0F0F</code> is 1.07:1 — invisible. Washed grey <code>#A7A5A4</code> on this
+    paper <code>#DFDDDE</code> is 1.84:1 — also invisible. So every colourway carries a
+    required ground assignment that decides which background it may be photographed
+    against and displayed on. Fixed at generation time, not patched later in CSS.</p>
+    <ul class="swatches">
+      <li class="sw"><span class="chip" style="background:#171717"></span>#171717 washed black → paper only</li>
+      <li class="sw"><span class="chip" style="background:#A7A5A4"></span>#A7A5A4 washed grey → dark only</li>
+    </ul>
+  </div>
+</section>
+
+<figure class="plate">
+  <img src="assets/plate-globe-1100.webp"
+       srcset="assets/plate-globe-1100.webp 1100w, assets/plate-globe-2200.webp 2200w"
+       sizes="100vw" width="2200" height="1772" loading="lazy"
+       alt="White oversized tee, front and back, with the orbital globe back print">
+  <figcaption>Oversized tee · white · 1200 Tee / Globe</figcaption>
+</figure>
+
+<section class="wrap" id="story">
+  <p class="eyebrow">03 — Where the mechanism came from</p>
+  <h2>It was already on the shirt.</h2>
+  <p>The orbital globe above — concentric rings, orbit ellipses, a compass star, Roman
+  numerals on the clock pocket print — is <strong>your cousin's own artwork</strong>. The
+  mechanism doesn't import a look from somewhere else; it sets that drawing turning. The
+  Capaldi titles gave the <em>structure</em>: concentricity, meshing rates, the
+  lock-into-place. What they didn't give is the colour — those titles are gold, amber and
+  high-contrast sci-fi, and this brand is bone on near-black, washed and quiet. We took
+  the mechanism and left the palette.</p>
+  <p><strong>The word space is the fragile part.</strong> Regenerating the garment renders
+  proved the name collapses to <code>OURTIME</code> under the slightest pressure — it
+  happened on the jeans twice before it held. On the site the wordmark is artwork, never a
+  webfont. Where it <em>is</em> set in type, a CI assertion measures the rendered gap
+  between the <strong>R</strong> and the <strong>T</strong> and fails the build below
+  0.5em. The panel is measuring that live.</p>
+</section>
+
+<section class="wrap foot" id="bag">
+  <p class="note">OUR TIME · EST. 2026 · EARN EVERY SECOND.</p>
+  <p class="note" style="margin-top:.6em">Prototype. Archivo and IBM Plex Mono stand in for
+  the licensed display and text faces. Garment renders are the corrected OUR TIME versions.</p>
+</section>
+
+<div class="lab" data-open="true" role="complementary" aria-label="Diagnostics">
+  <div class="lab-head">
+    <span>Diagnostics</span>
+    <button class="ctl" id="toggle" aria-expanded="true">Hide</button>
+  </div>
+  <div class="lab-body">
+    <dl>
+      <div class="row"><dt>Engine</dt><dd id="engine">—</dd></div>
+      <div class="row"><dt>Tier active</dt><dd id="tier">—</dd></div>
+      <div class="row"><dt>SVG in backdrop</dt><dd id="svgbf">—</dd></div>
+      <div class="row"><dt>Mechanism</dt><dd id="fps">—</dd></div>
+      <div class="row"><dt>R→T gap</dt><dd id="gap">—</dd></div>
+      <div class="row"><dt>DPR</dt><dd id="dpr">—</dd></div>
+      <div class="row"><dt>Scroll</dt><dd id="prog">0%</dd></div>
+    </dl>
+    <div class="tiers" role="group" aria-label="Force glass tier">
+      <button class="tierbtn" data-t="1">Tier 1</button>
+      <button class="tierbtn" data-t="2">Tier 2</button>
+      <button class="tierbtn" data-t="3">Tier 3</button>
+      <button class="tierbtn" data-t="auto">Auto</button>
+    </div>
+    <p class="verdict" id="verdict">Detecting…</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var root=document.documentElement, pill=document.querySelector(".pill");
+  var $=function(id){return document.getElementById(id)};
+  var reduce=matchMedia("(prefers-reduced-motion: reduce)");
+
+  /* ── Engine gate ──────────────────────────────────────────────────
+     @supports is ACTIVELY HARMFUL for SVG-in-backdrop-filter: Firefox returns
+     true and renders nothing, and the backdrop cannot be read back from JS,
+     so there is no pixel probe. Engine gate is the only honest detection.   */
+  var ua=navigator.userAgent;
+  var isChromium=(!!window.chrome&&/Chrome|Chromium/.test(ua)&&!/OPR|Edg\//.test(ua))||/Edg\//.test(ua);
+  var isGecko=/Gecko\//.test(ua)&&!/like Gecko/.test(ua);
+  var isWebKit=!isChromium&&!isGecko&&/AppleWebKit/.test(ua);
+  var engine=isChromium?"Chromium":isWebKit?"WebKit":isGecko?"Gecko":"Unknown";
+  var hasBF=CSS.supports("backdrop-filter","blur(2px)")||CSS.supports("-webkit-backdrop-filter","blur(2px)");
+  var claimsSVG=CSS.supports("backdrop-filter","url(#ot-refract)");
+  var tier1OK=isChromium&&claimsSVG;
+  var autoTier=tier1OK?1:hasBF?2:3, forced=null;
+
+  function applyTier(){
+    var t=forced||autoTier;
+    root.setAttribute("data-tier",String(t));
+    $("tier").textContent="Tier "+t+(forced?" (forced)":" (auto)");
+    $("tier").className=t===1?"ok":t===2?"":"warn";
+    [].forEach.call(document.querySelectorAll(".tierbtn"),function(b){
+      b.setAttribute("aria-pressed",String(b.dataset.t===(forced?String(forced):"auto")));
+    });
+    var v=$("verdict"), msg;
+    if(forced===1&&!tier1OK){
+      msg="Tier 1 forced on an engine that cannot render it — the browser falls back to whatever it does with an unknown filter. This is exactly the failure the engine gate prevents.";
+    }else if(engine==="Chromium"&&t===1){
+      msg="Chromium resolves Tier 1, so you are seeing true refraction. It is the bonus, never the design — it will not render on the phone.";
+    }else if(engine==="WebKit"){
+      msg="WebKit. Tier 1 refraction does not exist here: bug 245510 is still NEW and PR 68614 is merging-blocked. Tier 2 is what customers get, so judge the pill on this.";
+    }else if(engine==="Gecko"){
+      msg="Firefox. @supports(url()) reports "+(claimsSVG?"TRUE":"false")+" while rendering nothing — which is why this gates on engine, not on feature detection.";
+    }else{
+      msg="Engine not identified, so the gate falls back to Tier "+t+". Failing closed is correct.";
+    }
+    v.textContent=msg;
+  }
+
+  /* ── Displacement map, built to the pill's real pixel box ─────────── */
+  var feImage=$("ot-map"), filt=document.querySelector("#ot-refract");
+  function buildMap(){
+    var r=pill.getBoundingClientRect();
+    var w=Math.max(2,Math.round(r.width)), h=Math.max(2,Math.round(r.height));
+    var c=document.createElement("canvas"); c.width=w; c.height=h;
+    var ctx=c.getContext("2d"); if(!ctx) return;
+    var img=ctx.createImageData(w,h), d=img.data;
+    var rad=h/2, edge=Math.min(16,h/2.4);
+    for(var y=0;y<h;y++) for(var x=0;x<w;x++){
+      var qx=Math.abs(x-w/2)-(w/2-rad), qy=Math.abs(y-h/2)-(h/2-rad);
+      var ax=Math.max(qx,0), ay=Math.max(qy,0);
+      var dist=Math.sqrt(ax*ax+ay*ay)+Math.min(Math.max(qx,qy),0)-rad;
+      var t=Math.min(1,Math.max(0,(dist+edge)/edge)), f=t*t;
+      var nx=x-w/2, ny=y-h/2, len=Math.hypot(nx,ny)||1, i=(y*w+x)*4;
+      d[i]=Math.round(128+(nx/len)*f*127);
+      d[i+1]=Math.round(128+(ny/len)*f*127);
+      d[i+2]=128; d[i+3]=255;
+    }
+    ctx.putImageData(img,0,0);
+    var url=c.toDataURL();
+    feImage.setAttributeNS("http://www.w3.org/1999/xlink","href",url);
+    feImage.setAttribute("href",url);
+    [feImage,filt].forEach(function(n){n.setAttribute("width",w);n.setAttribute("height",h)});
+  }
+
+  /* ════════════════════════════════════════════════════════════════
+     THE MECHANISM
+     Five concentric rings on fixed INTEGER gear ratios. Integer ratios
+     are the whole point: the rings drift and periodically realign, which
+     is what a real gear train does. The escapement ring is quantised to
+     60 discrete steps — the one stepped element that sells it as
+     clockwork rather than as spinning circles.
+     ════════════════════════════════════════════════════════════════ */
+  var cv=$("mech"), ctx=cv&&cv.getContext("2d"), TAU=Math.PI*2;
+  var NUMERALS=["XII","I","II","III","IIII","V","VI","VII","VIII","IX","X","XI"];
+  var size=0, dpr=1, scrollTurn=0, introStart=0, mode="scroll", frames=0, fpsAt=0, lastFps="—";
+
+  function fit(){
+    if(!cv) return;
+    var r=cv.getBoundingClientRect();
+    dpr=Math.min(devicePixelRatio||1, 2.5);           /* cap: 3x costs 44% more pixels for no visible gain */
+    size=Math.max(120, Math.round(r.width));
+    cv.width=Math.round(size*dpr); cv.height=Math.round(size*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+
+  function ring(cx,cy,rad,alpha,lw){
+    ctx.beginPath(); ctx.arc(cx,cy,rad,0,TAU);
+    ctx.strokeStyle="rgba(250,246,246,"+alpha+")"; ctx.lineWidth=lw; ctx.stroke();
+  }
+
+  function ticks(cx,cy,rad,count,len,alpha,lw,every,longLen){
+    for(var i=0;i<count;i++){
+      var a=(i/count)*TAU, L=(every&&i%every===0)?longLen:len;
+      var x1=cx+Math.cos(a)*rad, y1=cy+Math.sin(a)*rad;
+      var x2=cx+Math.cos(a)*(rad-L), y2=cy+Math.sin(a)*(rad-L);
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
+      ctx.strokeStyle="rgba(250,246,246,"+alpha+")"; ctx.lineWidth=lw; ctx.stroke();
+    }
+  }
+
+  function teeth(cx,cy,rad,count,depth,alpha,lw){
+    for(var i=0;i<count;i++){
+      var a=(i/count)*TAU, w=(TAU/count)*0.34;
+      ctx.beginPath();
+      ctx.arc(cx,cy,rad,a-w,a+w);
+      ctx.arc(cx,cy,rad+depth,a+w,a-w,true);
+      ctx.closePath();
+      ctx.strokeStyle="rgba(250,246,246,"+alpha+")"; ctx.lineWidth=lw; ctx.stroke();
+    }
+  }
+
+  /* counterRot cancels the parent ring's rotation so the numerals ORBIT but stay
+     upright — a rotating bezel, not a tumbling one. Radial orientation was tried
+     and reads as upside-down nonsense ("IIIV") through the bottom half. */
+  function numerals(cx,cy,rad,alpha,px,counterRot){
+    ctx.font='500 '+px+'px "IBM Plex Mono", ui-monospace, monospace';
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillStyle="rgba(250,246,246,"+alpha+")";
+    for(var i=0;i<12;i++){
+      var a=(i/12)*TAU-Math.PI/2;
+      ctx.save();
+      ctx.translate(cx+Math.cos(a)*rad, cy+Math.sin(a)*rad);
+      ctx.rotate(counterRot||0);
+      ctx.fillText(NUMERALS[i],0,0);
+      ctx.restore();
+    }
+  }
+
+  function ellipse(cx,cy,rx,ry,rot,alpha,lw,dash){
+    ctx.save(); ctx.translate(cx,cy); ctx.rotate(rot);
+    ctx.beginPath(); ctx.ellipse(0,0,rx,ry,0,0,TAU);
+    if(dash) ctx.setLineDash(dash);
+    ctx.strokeStyle="rgba(250,246,246,"+alpha+")"; ctx.lineWidth=lw; ctx.stroke();
+    ctx.restore();
+  }
+
+  /* one layer of the assembly, at a given depth scale */
+  function assembly(cx,cy,R,T,a,detail){
+    var lw=Math.max(.6, R*0.0035);
+
+    /* R1 — dial: hairline + 60 minute ticks + 12 Roman numerals. rate −1 */
+    ctx.save(); ctx.translate(cx,cy); ctx.rotate(-T); ctx.translate(-cx,-cy);
+      ring(cx,cy,R*1.00,a*0.34,lw);
+      ticks(cx,cy,R*1.00,60,R*0.030,a*0.34,lw,5,R*0.058);
+      if(detail) numerals(cx,cy,R*0.885,a*0.60,Math.max(7,R*0.062),T);
+    ctx.restore();
+
+    /* R2 — gear ring, 48 teeth. rate +2 */
+    ctx.save(); ctx.translate(cx,cy); ctx.rotate(T*2); ctx.translate(-cx,-cy);
+      ring(cx,cy,R*0.775,a*0.30,lw);
+      teeth(cx,cy,R*0.775,48,R*0.030,a*0.42,lw);
+    ctx.restore();
+
+    /* R3 — fine index, 120 ticks. rate −3 */
+    ctx.save(); ctx.translate(cx,cy); ctx.rotate(-T*3); ctx.translate(-cx,-cy);
+      ring(cx,cy,R*0.665,a*0.22,lw);
+      ticks(cx,cy,R*0.665,120,R*0.016,a*0.26,lw*0.8,10,R*0.034);
+    ctx.restore();
+
+    /* R4 — orbital ellipses, lifted straight off the globe tee. rate +6 */
+    ctx.save(); ctx.translate(cx,cy); ctx.rotate(T*6); ctx.translate(-cx,-cy);
+      ellipse(cx,cy,R*0.555,R*0.200,0.32,a*0.30,lw);
+      ellipse(cx,cy,R*0.555,R*0.200,TAU/3+0.32,a*0.22,lw);
+      ellipse(cx,cy,R*0.555,R*0.200,2*TAU/3+0.32,a*0.22,lw);
+    ctx.restore();
+
+    /* R5 — THE ESCAPEMENT. Quantised to 60 steps. This is the clockwork tell. */
+    var step=Math.floor(T*12/TAU*60)/60*TAU;
+    ctx.save(); ctx.translate(cx,cy); ctx.rotate(-step); ctx.translate(-cx,-cy);
+      ring(cx,cy,R*0.415,a*0.26,lw);
+      ticks(cx,cy,R*0.415,60,R*0.022,a*0.34,lw,15,R*0.046);
+      /* the single slate accent — one mark, the whole brand's only saturated colour */
+      ctx.beginPath();
+      ctx.moveTo(cx,cy-R*0.415); ctx.lineTo(cx,cy-R*0.415+R*0.070);
+      ctx.strokeStyle="rgba(84,100,126,"+(a*0.95)+")"; ctx.lineWidth=lw*2.4; ctx.stroke();
+    ctx.restore();
+
+    /* inner dial: 24 marks — the "24 / 7" from the tee */
+    ctx.save(); ctx.translate(cx,cy); ctx.rotate(T*4); ctx.translate(-cx,-cy);
+      ring(cx,cy,R*0.300,a*0.18,lw);
+      ticks(cx,cy,R*0.300,24,R*0.020,a*0.24,lw*0.8,6,R*0.036);
+    ctx.restore();
+  }
+
+  function draw(now){
+    if(!ctx) return;
+    var cx=size/2, cy=size/2, R=size*0.46;
+    ctx.clearRect(0,0,size,size);
+
+    /* wind-up: fast, then decelerating into lock. easeOutQuint. */
+    var intro=1, spin=0;
+    if(introStart){
+      var e=Math.min(1,(now-introStart)/2400);
+      intro=1-Math.pow(1-e,5);
+      spin=(1-intro)*TAU*2.2;
+      if(e>=1) introStart=0;
+    }
+
+    var ambient=reduce.matches||mode==="still" ? 0 : now/26000*TAU;
+    var T=ambient+scrollTurn+spin;
+
+    /* depth: receding copies imply the vortex without a 3D engine */
+    var DEPTH=[[1.00,1.00,true],[0.590,0.24,false],[0.345,0.10,false]];
+    for(var i=0;i<DEPTH.length;i++){
+      var d=DEPTH[i];
+      assembly(cx,cy,R*d[0],T*(1+i*0.45)+i*0.7,d[1]*intro,d[2]);
+    }
+
+    /* the hand — ticks in 60 discrete steps, never glides */
+    var hand=Math.floor((T*3/TAU)*60)/60*TAU;
+    ctx.save(); ctx.translate(cx,cy); ctx.rotate(hand);
+      ctx.beginPath(); ctx.moveTo(0,R*0.055); ctx.lineTo(0,-R*0.335);
+      ctx.strokeStyle="rgba(250,246,246,"+(0.70*intro)+")";
+      ctx.lineWidth=Math.max(1,R*0.008); ctx.lineCap="round"; ctx.stroke();
+    ctx.restore();
+
+    frames++;
+    if(!fpsAt){ fpsAt=now; frames=0; }
+    else if(now-fpsAt>1000){ lastFps=Math.round(frames*1000/(now-fpsAt))+" fps"; frames=0; fpsAt=now; $("fps").textContent=lastFps; }
+  }
+
+  var running=false;
+  function loop(now){ draw(now); if(running) requestAnimationFrame(loop); }
+  function start(){ if(running||reduce.matches||mode==="still") return; running=true; requestAnimationFrame(loop); }
+  function stop(){ running=false; }
+
+  /* pause when off-screen — no point burning battery on an unseen canvas */
+  if(cv&&"IntersectionObserver" in window){
+    new IntersectionObserver(function(es){
+      es[0].isIntersecting ? start() : (stop(), $("fps").textContent="paused");
+    },{threshold:0.01}).observe(cv);
+  }
+
+  /* ── scroll: drives both the specular sweep and the mechanism ─────── */
+  var ticking=false;
+  function onScroll(){
+    if(ticking) return; ticking=true;
+    requestAnimationFrame(function(){
+      var max=document.documentElement.scrollHeight-innerHeight;
+      var p=max>0?Math.min(1,Math.max(0,scrollY/max)):0;
+      if(!reduce.matches) root.style.setProperty("--light",(p*360).toFixed(1)+"deg");
+      if(mode==="scroll") scrollTurn=p*TAU*1.5;
+      $("prog").textContent=Math.round(p*100)+"%";
+      if(!running&&(reduce.matches||mode==="still")) draw(performance.now());
+      ticking=false;
+    });
+  }
+
+  /* ── the word-space guard, measured live ─────────────────────────── */
+  function measureGap(){
+    var sp=document.querySelector(".wordmark .sp"); if(!sp) return;
+    var fs=parseFloat(getComputedStyle(sp.parentNode).fontSize)||16;
+    var em=sp.getBoundingClientRect().width/fs, el=$("gap");
+    el.textContent=em.toFixed(2)+"em";
+    el.className=em>=0.5?"ok":"no";
+    el.title=em>=0.5?"passes the 0.5em CI floor":"FAILS — would break the build";
+  }
+
+  /* ── controls ─────────────────────────────────────────────────────── */
+  $("m-replay").addEventListener("click",function(){
+    introStart=performance.now();
+    if(reduce.matches||mode==="still"){ draw(performance.now()); } else start();
+  });
+  function setMode(m){
+    mode=m;
+    $("m-scroll").setAttribute("aria-pressed",String(m==="scroll"));
+    $("m-still").setAttribute("aria-pressed",String(m==="still"));
+    if(m==="still"){ stop(); draw(performance.now()); $("fps").textContent="still"; }
+    else start();
+  }
+  $("m-scroll").addEventListener("click",function(){ setMode("scroll") });
+  $("m-still").addEventListener("click",function(){ setMode("still") });
+
+  [].forEach.call(document.querySelectorAll(".tierbtn"),function(b){
+    b.addEventListener("click",function(){
+      var v=b.dataset.t; forced=(v==="auto")?null:parseInt(v,10); applyTier();
+    });
+  });
+  $("toggle").addEventListener("click",function(){
+    var lab=document.querySelector(".lab"), open=lab.dataset.open!=="false";
+    lab.dataset.open=String(!open);
+    this.textContent=open?"Show":"Hide";
+    this.setAttribute("aria-expanded",String(!open));
+  });
+
+  addEventListener("scroll",onScroll,{passive:true});
+  addEventListener("resize",function(){ fit(); buildMap(); measureGap(); draw(performance.now()); });
+  if(document.fonts) document.fonts.ready.then(function(){ measureGap(); draw(performance.now()); });
+
+  /* boot */
+  $("engine").textContent=engine;
+  $("svgbf").textContent=claimsSVG?(isChromium?"yes":"claims yes, lies"):"no";
+  $("svgbf").className=tier1OK?"ok":claimsSVG?"warn":"no";
+  $("dpr").textContent=(devicePixelRatio||1).toFixed(2)+"×";
+  applyTier(); buildMap(); measureGap(); fit(); onScroll();
+  if(reduce.matches){ mode="still"; $("m-still").setAttribute("aria-pressed","true"); $("m-scroll").setAttribute("aria-pressed","false"); $("fps").textContent="reduced motion"; draw(performance.now()); }
+  else { introStart=performance.now(); start(); }
+})();
+</script>

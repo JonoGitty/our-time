@@ -1,0 +1,137 @@
+{
+  "lens": "E-commerce operator who has run a clothing label: will it sell, can a non-technical owner live with it, does it get a buyer from landing to checkout fast, and does it handle the boring-but-vital things (size selection, sold-out, sizing guidance, delivery/returns, email capture, the drop mechanic, mobile checkout) at a sane ongoing cost for a 2026 launch label with no existing demand.",
+  "scores": [
+    {
+      "concept_name": "THE SLOW HAND",
+      "score": 6.5,
+      "strengths": [
+        "The only concept whose collection architecture genuinely matches the confirmed range: /shop 'ledger' is built for 7 styles and ~31 colourways with a sticky filter bar, URL-synced filters (/shop?style=shorts&colour=cream), server-renderable, and multi-select. Concepts 2 and 3 both under-build this.",
+        "Colour selection on the PDP is a real navigation to a sibling URL (/shorts-cream), not client-side state. That gives ~31 independently indexable, shareable, ad-landable product pages instead of 7 \u2014 the single biggest free SEO/paid-traffic win in any of the three documents.",
+        "Sparse variant matrix handled correctly and explicitly: non-existent size/colour combos are ABSENT, sold-out ones are struck. Tri-state inventory with quantityAvailable null treated as 'not tracked', never zero. '3 LEFT' shown only under 4. This is the exact bug that breaks launch day and it is closed.",
+        "The `bg: dark | paper` field per colourway, enforced in the catalogue schema, stops washed grey (1.84:1 on paper) and washed black (8 luminance points off the ground) from disappearing in the grid. A merchandising rule enforced in data, not in a designer's memory \u2014 it protects every future grid, PDP and social crop.",
+        "Cart drawer is honest and complete: 'TAX AND SHIPPING CALCULATED AT CHECKOUT', designed empty state, dispatch cut-off repeated, focus trap, and a beginCheckout() that returns an honest 'unavailable' rather than faking a checkout.",
+        "Dispatch cut-off rendered server-side per request with the correct BST/GMT offset \u2014 no ticking, no jitter, no hydration mismatch. Cheaper and more robust than a live client timer.",
+        "Two timers in two registers (drop-closing countdown + dispatch cut-off) so urgency and service sit side by side, with the :has() guard against a 00:00:00 flash and an in-place swap to a live link on expiry.",
+        "Sold-out is designed, not errored: 20% desaturation plus a mono SOLD OUT replacing the price. Cards are not hidden."
+      ],
+      "weaknesses": [
+        "Time-to-product is the worst-but-one. The cover is 100svh of video with, by its own description, ZERO buttons and zero affordances \u2014 'the pill is the only affordance on screen'. For a brand with no demand and EST. 2026 in the footer, a full screen that cannot be clicked is a bounce generator.",
+        "Spread 02 deliberately withholds add-to-bag from the six-colourway shorts run: 'No add-to-bag on this spread \u2014 it is editorial, and the reader goes to the ledger to buy.' That is a purity decision that costs units. The shorts run is the widest, cheapest, most impulse-friendly part of the range and it is presented with no buy affordance.",
+        "Chronological default sort on /shop. The document admits it: a customer who wants 'shorts, medium, cream' is served by a filter, not a ledger. With 31 colourways, defaulting to a time-ordered list makes the shopper do work the brand should be doing.",
+        "Email capture lives only in the colophon at the very bottom of a seven-spread home page, plus the separate /drop-01 page. For a pre-launch label whose whole asset is the list, that is the wrong placement \u2014 capture should be earlier and reusable as the notify-me on sold-out variants.",
+        "Sizing guidance is buried in a closed <details> accordion on the PDP. A heavyweight oversized washed tee and a garment-dyed short are the two highest returns-risk categories there are; hiding fit and shrinkage behind a tap is a measurable returns cost.",
+        "Highest ongoing cost of the three: Klim S\u00f6hne at \u00a3450\u2013700 for four styles, plus a Blender-rendered 120-frame Cycles sequence with no cheap substitute, plus an Astro build the owner cannot touch.",
+        "It admits its own commercial fragility: 'This direction fails in revision, not in design. There is nothing to add.' If the cousin asks for more product above the fold, every available response breaks the concept."
+      ],
+      "fatal_flaws": [
+        "The home page's motion budget and structural climax are both a Blender Cycles hourglass sequence that nobody has rendered. If it is not made \u2014 and the client was already told Blender was overkill \u2014 Spread 05 and the 'OUR TIME.' payoff both evaporate and the home page becomes a nice grid with a good footer. The concept names this risk itself.",
+        "The site's single most expensive effect (the pinned canvas) sits under the fixed glass pill, and the mitigation is to switch the glass off for the duration. The signature effect is disabled during the signature moment \u2014 the client will notice."
+      ]
+    },
+    {
+      "concept_name": "THE GLASS EMPTIES",
+      "score": 5,
+      "strengths": [
+        "The only concept with a real, itemised pilot budget: $8.75 against the client's $15 ceiling, with the full set costed separately at ~$36.40 for later approval. That is an approval artefact a client can actually sign, and it directly answers the stated constraint.",
+        "The HG-KEY gate is excellent risk management: the client approves ONE $0.13 still before 123 Blender frames are rendered. De-risking the most expensive asset with the cheapest possible artefact is exactly right.",
+        "Generation discipline that will actually hold: generate colourway 1, approve it, then EDIT that output for 2\u20136 rather than re-prompting. The washed-black-on-sand set rule is executed at generation time (SH-05 prompt) rather than patched in CSS later.",
+        "PDP handles the boring things properly \u2014 sparse matrix aware size grid, 'TIME'S UP' + NOTIFY ME on out-of-stock, quantityAvailable null not rendered as zero, compareAtPrice strike-through, all exercised on the local JSON adapter before Shopify exists.",
+        "Countdown is content-managed via ContentAdapter so the owner changes the drop end date himself, with the :has() guard, in-place expiry swap and data-timezone='store'. The most common way a countdown becomes an embarrassment is closed.",
+        "Collection page treats the seven garment types as real collections with their own handles and SEO rather than tag filters, with URL-synced filter state and merchant option ordering (never alphabetised).",
+        "Sensible platform sequencing: Astro static by default with the Cloudflare adapter waiting, rather than committing to a server runtime on day one."
+      ],
+      "weaknesses": [
+        "Time-to-product is the worst of the three by a wide margin. 260vh of pinned hourglass (220vh on mobile), then a 100svh silent match-cut section with a single text link, and only THEN the product grid at '02:41'. That is roughly five screens of scroll before anything is buyable. For a label with zero existing demand this is a Fear-of-God move made by a brand that has not earned it \u2014 and the concept even cites Fear of God as precedent.",
+        "Sizing guidance is the weakest of the three. FABRIC / FIT / CARE / DELIVERY are <details> accordions on the PDP and nothing else. There is no model height/size-worn line, no garment measurement table, no garment-dye shrinkage disclosure. On oversized heavyweight tees and washed shorts that is the number one returns driver, left unaddressed.",
+        "Renaming functional states to brand voice \u2014 sold-out becomes 'TIME'S UP', restock becomes 'BACK ON THE CLOCK'. It is cute and it is unambiguous, but it is less scannable on a six-cell size grid than the word customers are trained to find, and it will need explaining in support emails.",
+        "Email capture appears once, inside the drop section, as a bare hairline input. It is not reused as the notify-me capture on sold-out variants, so the highest-intent moment in the funnel (wanted it, couldn't have it) collects nothing.",
+        "The nav pill is deliberately SOLID for the entire hero \u2014 meaning the client's headline request, the liquid glass bar, is switched off for the first and longest section of the site. The concept frames this as punctuation; the client will read it as the feature not working.",
+        "Cart drawer is competent but thinner than Concept 3's: no free-shipping progress, and the discount-code failure state is asserted in the adapter rules rather than designed into the drawer.",
+        "Two paid type licences (Neue Haas Grotesk \u00a3150\u2013400 plus ABC Diatype Mono \u20ac90\u2013150) before a single unit is sold."
+      ],
+      "fatal_flaws": [
+        "Single point of failure, self-declared: 'The whole concept rests on one Blender render being beautiful, and I cannot promise that from here.' If the hourglass looks like a stock 3D asset, 260vh of pinned scroll becomes the most expensive gimmick on the internet \u2014 and the fallback (cut the pin to 140vh) leaves a home page whose entire narrative spine has been removed.",
+        "The homepage narrative requires the customer to complete the full scroll to reach commerce. Real mobile traffic will not. There is no quick-add, no product, no price and no size above roughly the fifth screen, and no alternate entry path is designed on the home page itself."
+      ]
+    },
+    {
+      "concept_name": "THE COUNTER",
+      "score": 8.5,
+      "strengths": [
+        "The nav pill morphs on a PDP into [S][M][L][XL] \u00b7 ADD \u2014 \u00a348, bottom-anchored on mobile inside the thumb arc. That is the single best mobile-conversion decision in any of the three documents, and it is the only version of the persistent bottom bar that is not a tell, because the bar IS add-to-bag.",
+        "Time-to-product is one screen. Hero carries the counter plus 'SEE THE DROP \u2192'; section 02 is the product rail with quick-add and always-visible size chips on touch (no hover-gated conversion affordance). A buyer can be in the cart in two taps.",
+        "Section 05 'FIT & CARE' is the returns-killer and it is designed, not dumped in an accordion \u2014 open by default, no accordions on mobile, with the model line ('6'1\" / 185cm, chest 38\" / 97cm, wearing M'), a real garment measurement table with diagonal fractions, the garment-dye disclosure ('expect up to 3% shrinkage and slight colour variation \u2014 that is the process, not a fault'), UK delivery pricing, the 14-day cancel and 30-day return, and the trading address. No other concept does this.",
+        "Email capture is a first-class section framed as membership with a real promise ('The list gets 30 minutes before everyone else. That's it \u2014 no weekly emails'), a real count or nothing, a form that works without JS, and \u2014 critically \u2014 the SAME component is reused as the NOTIFY capture on sold-out variants where it also collects the size. That is demand data you can merchandise the next drop against.",
+        "The drop mechanic is the strongest and it is the cheapest: drop as a RANGE (11:00 FRI \u2192 23:00 SUN), counter in the nav on every screen of the funnel including the cart, Corteiz-inverted to count to closing, content-managed so the owner moves it himself, and closed drops persist at their own handles as an /archive ledger. The archive is free to build (it is the collection page in a closed state) and compounds into SEO and social proof.",
+        "Sold-out written as a timestamp ('SOLD OUT \u2014 23:14, SUN 12 OCT'). Free, already in the platform data, and it is the most persuasive social proof a brand with no reviews and no press can show.",
+        "Cart drawer is the most complete: free-shipping progress hairline with '\u00a327 TO FREE UK DELIVERY', quantity stepper, a discount-code field that can genuinely fail with a readable message, 'Tax and delivery calculated at checkout', dispatch cutoff repeated, designed empty state, and every state exercised against the local adapter before Shopify exists.",
+        "The cheapest and lowest-risk hero motion of the three: the sand animates inside the existing print, composited from ONE approved Gemini still plus a depth map. No Blender, no 3D pipeline, ~\u00a30 in further API spend, and if it fails the section degrades to a very good photograph.",
+        "Honest scaling gate rather than fake sophistication: no filter panel over seven products ('a filter UI over 7 products is theatre'), but the Collection type, handle routing and sticky bar are built now and the filter drawer switches on automatically at >18 published variants.",
+        "Full Product + Offer JSON-LD with availability, priceValidUntil tied to the drop close, and genuinely distinct alt text per gallery image."
+      ],
+      "weaknesses": [
+        "Designed for a seven-SKU drop when the brief confirms seven garment TYPES and ~30 colourways. The concept admits the colour-bar pattern does not extend to seven garment types and that the homepage rhythm would need a real re-layout. That is the largest single gap and it needs fixing before build, not after.",
+        "Astro SSR is a permanent operational surface the owner cannot maintain \u2014 an edge runtime, a quarterly Shopify API-version bump, and a developer on retainer for both. The concept names this honestly but it is still a recurring cost Concept 2's static-first sequencing avoids.",
+        "No red anywhere on the site, including for errors. Accessible (it pairs a word with the state) and brand-correct, but error and sold-out states will be marginally less scannable than customers are trained to expect, and that shows up in support volume rather than in a design review.",
+        "The countdown is a business commitment, not a design decision: a drop that closes at 23:00 Sunday must actually close, with struck sizes. If the owner leaves stock live after expiry, the mechanic is exposed as theatre and it poisons every future drop.",
+        "Only three real-place editorial frames on the entire site. For a brand with no demand and no press, the site is commercially efficient but thin on the aspiration that makes someone want a \u00a348 tee from a label they have never heard of.",
+        "The sand-in-the-print sequence needs competent hand compositing of a luma matte and a hand-touched depth map. Cheaper than Blender, but not free, and quality is entirely decided by the depth map."
+      ],
+      "fatal_flaws": []
+    }
+  ],
+  "winner": "THE COUNTER",
+  "best_ideas_to_graft": [
+    {
+      "from_concept": "THE SLOW HAND",
+      "idea": "The /shop 'ledger' collection architecture built for 7 garment types \u00d7 ~31 colourways from day one \u2014 sticky filter bar as a first-class component with multi-select, URL-synced state (/shop?style=shorts&colour=cream), server-renderable filtered views, and a mobile full-height filter sheet rather than a dropdown.",
+      "why": "This is THE COUNTER's biggest hole. It deliberately ships no filter panel over seven products and admits the colour-bar homepage pattern will not extend to seven garment types. The brief confirms the larger range is real. Graft the ledger now, keep THE COUNTER's honest rule that the filter UI only switches on above ~18 published variants, and the launch page stays clean while the architecture is already correct."
+    },
+    {
+      "from_concept": "THE SLOW HAND",
+      "idea": "Colour selection on the PDP as a real navigation to a sibling URL (/shorts-cream, /shorts-washed-denim) rather than a ?colour= query parameter or client-side state.",
+      "why": "It turns roughly 7 indexable product pages into roughly 31. Every colourway becomes independently indexable, shareable, linkable from Instagram, and usable as a paid-ad landing page. For a brand-new label with no domain authority and no ad budget, that is the largest free acquisition win available, and it costs nothing at build time if decided now."
+    },
+    {
+      "from_concept": "THE SLOW HAND",
+      "idea": "The `bg: dark | paper` field on every catalogue colourway, enforced in the schema, deciding which background a garment is allowed to be photographed and displayed against (washed grey #A7A5A4 is 1.84:1 on paper; washed black #171717 is 8 luminance points off the ground).",
+      "why": "THE COUNTER has the correct rule (washed black never on the near-black ground) but states it as an art-direction law rather than a data field. Put it in the catalogue and it survives every future grid, every future drop, every social crop and every person who touches the site after the original developer leaves. Rules in prose get forgotten; rules in schema do not."
+    },
+    {
+      "from_concept": "THE SLOW HAND",
+      "idea": "Render the dispatch cut-off line server-side per request with the correct BST/GMT offset instead of ticking it in the client.",
+      "why": "THE COUNTER runs 'ORDER IN 3H 12M FOR DISPATCH TODAY' as a second live timer in the cart, the PDP and the Fit & Care band. A server-rendered static line gets the same conversion effect with no hydration mismatch, no jitter, no second rAF loop and no British-Summer-Time bug in October. Keep the live ticking for the drop counter only \u2014 one real-time element is enough."
+    },
+    {
+      "from_concept": "THE SLOW HAND",
+      "idea": "The OT-WORDMARK-TEE generation prompt block: the explicit two-word lock ('seven letters in two words: OUR TIME; the gap between the R and the T is at least twice as wide as the gap between any two letters inside a word'), plus the named QA gate and the repair loop that iterates on the previous OUTPUT rather than re-prompting the original.",
+      "why": "The wordmark word-space collapse is a documented, observed failure on this exact account, and four tees in the range carry a wordmark back-print. THE COUNTER moves the site's wordmark to SVG (correct) but still has the model render the print on the garment. This is the specific prompt language that survives it, and the repair path that fixes it cheaply."
+    },
+    {
+      "from_concept": "THE GLASS EMPTIES",
+      "idea": "The itemised pilot budget table: ~$8.75 against the $15 ceiling (2 casting candidates, 5 character-sheet views, 3 style plates, 1 art-direction key still, 1 hero garment 4K, 2 colourways, 1 lookbook still, plus a 3\u00d7 re-roll allowance and two Veo takes), with the full set costed separately at ~$36.40 for later approval.",
+      "why": "This is the only concrete answer to the client's stated $15 constraint anywhere in the three documents. It is an approval artefact the owner can sign, it proves the pipeline before scaling, and it makes the real point explicitly: the money is trivial, the rejection rate is the cost. THE COUNTER's asset plan is good but has no costed gate."
+    },
+    {
+      "from_concept": "THE GLASS EMPTIES",
+      "idea": "The HG-KEY pattern \u2014 generate ONE cheap art-direction still and get client sign-off on it before producing the expensive sequence.",
+      "why": "THE COUNTER's hero sequence depends on one Gemini still being right (print position, bone-on-navy contrast, wash mottle) plus hand compositing. Spending $0.24 to buy a go/no-go decision before committing days of compositing is the best risk-per-pound in any of the three plans, and it generalises: approve the still, then build the motion."
+    },
+    {
+      "from_concept": "THE GLASS EMPTIES",
+      "idea": "The colourway generation discipline stated as a procedure: generate colourway 1, get it approved, then EDIT that approved output for colourways 2\u20136 rather than re-prompting the original \u2014 and execute the washed-black-on-sand background swap inside the generation prompt rather than patching it in CSS.",
+      "why": "Six shorts colourways generated independently will not match, and mismatched skin tone or build across a six-up grid is instantly visible and reads as cheap. THE COUNTER has this for its C01\u2013C06 set but states it loosely; the SH-01..06 prompt block is the more rigorous version, and baking the contrast rule into the prompt means the asset is right at birth."
+    },
+    {
+      "from_concept": "THE GLASS EMPTIES",
+      "idea": "Start on Astro static with the Cloudflare/Node adapter held in reserve, flipping SSR on only for the routes that genuinely need it (PDP structured data, metaobject-backed content) rather than committing to SSR everywhere on day one.",
+      "why": "THE COUNTER chooses SSR outright and then correctly lists it as a permanent operational cost the owner cannot maintain. Starting static reduces the surface, the hosting decision and the failure modes at launch, and the escape hatch is a config change rather than a rewrite. Lower ops cost is a direct, ongoing saving for a one-person label."
+    },
+    {
+      "from_concept": "THE GLASS EMPTIES",
+      "idea": "One editorial lookbook beat \u2014 a single ambient loop plus a hard-cropped wide band showing the garments worn in a place \u2014 sitting between the product rail and the Fit & Care band.",
+      "why": "THE COUNTER is commercially efficient but aspirationally thin: three real-place frames on the whole site. A brand-new label with no press and no reviews sells the feeling before it sells the cotton. One beat, not five, keeps the funnel intact while giving a first-time visitor a reason to want the tee rather than merely to price it."
+    }
+  ],
+  "verdict": "THE COUNTER wins, and not narrowly. It is the only one of the three written by someone who has thought about what happens on the Monday after launch.\n\nJudged purely commercially, the gap is in the unglamorous half of the brief. THE COUNTER is the only concept with a designed, always-open sizing and care band \u2014 model height and size worn, a real garment measurement table, and the garment-dye shrinkage disclosure stated plainly. On an oversized heavyweight washed tee and garment-dyed shorts, fit and shrinkage are the entire returns bill, and the other two concepts hide them in a closed accordion. It is the only one where email capture is a first-class section AND is reused as the notify-me on sold-out variants, capturing the size \u2014 so the highest-intent moment in the funnel (wanted it, couldn't have it) produces demand data instead of nothing. Its cart drawer is the only one with free-shipping progress and a discount-code field that can genuinely fail. And the nav pill morphing into [S][M][L][XL] \u00b7 ADD, bottom-anchored inside the thumb arc on a PDP, is the best mobile conversion decision in any of the three documents: it is the persistent bottom bar done as the one thing that justifies it.\n\nTime-to-product decides the rest. THE COUNTER puts a buyable, quick-addable product rail one screen down. THE SLOW HAND opens on a full screen with, by its own description, zero buttons, and then deliberately withholds add-to-bag from the six-colourway shorts run on editorial grounds \u2014 the widest, cheapest, most impulse-friendly part of the range, presented with no way to buy it. THE GLASS EMPTIES is worse still: 260vh of pinned hourglass, then a silent full-screen match-cut, before anything has a price on it. Both are Fear-of-God moves, and Fear of God can make them because demand already exists. OUR TIME has EST. 2026 in its own footer.\n\nRisk concentration is the other separator. Both losing concepts stake their structural climax on a Blender Cycles render that does not exist, and THE GLASS EMPTIES says outright that it has a single point of failure and this is it. THE COUNTER's hero motion is composited from one approved still plus a depth map \u2014 cheaper, no 3D pipeline, and if it fails the section degrades to a very good photograph rather than deleting the concept.\n\nTwo things must be fixed before build, and they are both real. First, THE COUNTER is designed for a seven-SKU drop while the brief confirms seven garment types and roughly thirty colourways; its own risk list admits the colour-bar homepage pattern does not extend. Graft THE SLOW HAND's ledger and per-colourway URLs wholesale, and keep THE COUNTER's honest rule that the filter UI stays off until the catalogue earns it. Second, drop SSR-everywhere for THE GLASS EMPTIES' static-first sequencing, because 'the cousin cannot maintain this bit' is a cost that recurs every quarter forever.\n\nOne non-negotiable operating condition, which is a business commitment rather than a design one: if the counter says the drop closes at 23:00 Sunday, the drop must close at 23:00 Sunday, with struck sizes and a timestamped archive. A countdown that expires while stock stays live is exposed as theatre within one cycle and poisons every drop after it. That is the likeliest way this direction fails in practice, and it is entirely within the owner's control."
+}
